@@ -1,0 +1,43 @@
+{contentType HTML5}<!doctype html>
+<html lang="cs">
+    <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+	<meta name="description" content="{block #metaDescription}Forum publicum{/block}">
+	<meta name="copyright" content="2008-{=date('Y')} Jan Martinek">
+	<meta name="author" content="Jan Martinek - info@jan-martinek.com">
+	<meta name="robots" content="index, follow">
+
+	<title>{include #title} | Deliberativní hodnocení stipendijních projektů</title>
+
+	<link rel="shortcut icon" href="{$baseUri}favicon.png" type="image/png">
+	<link rel="stylesheet" media="screen,projection,tv" href="{$baseUri}css/screen.css?v=1" type="text/css">
+	<link rel="stylesheet" media="print" href="{$baseUri}css/print.css?v=1" type="text/css">
+</head>
+
+<body>
+	<div id="flashMessages">
+	    <div class="wrapper">
+	    {foreach $flashes as $flash}<div class="flashMessage {$flash->type}">{$flash->message}</div>{/foreach}
+	    </div>
+	</div>
+	<div id="header">
+	    <div class="wrapper">
+			<div id="userBox">
+			    {if Environment::getUser()->isLoggedIn()}
+				{? $identity = new Juror(Environment::getUser()->getIdentity()->getData()); }
+				<p>{$identity->name} &bull; <a href="{link Login:logout}">Odhlásit se</a></p>
+			    {else}
+				<p><a href="{link Login:default}">Přihlásit se</a></p>
+			    {/if}
+			</div>
+		    
+			<h2><a href="/">Deliberativní hodnocení stipendijních projektů</a></h2>    
+		</div>
+	</div> <!-- header -->	
+		
+	<div class="wrapper">	
+		{include #content}
+	</div>
+    </body>
+</html>

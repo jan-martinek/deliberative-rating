@@ -1,0 +1,56 @@
+{contentType HTML5}<!doctype html>
+<html>
+    <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+	<meta name="description" content="{block #metaDescription}Forum publicum{/block}">
+	<meta name="copyright" content="2008-{=date('Y')} Jan Martinek">
+	<meta name="author" content="Jan Martinek - info@jan-martinek.com">
+	<meta name="robots" content="index, follow">
+
+	{*<link rel="alternate" type="application/rss+xml" title="Forum publicum - Všechny návrhy" href="{link Rss:default}">*}
+
+
+	<title>{include #title}</title>
+
+	<link rel="shortcut icon" href="{$baseUri}halas-favicon.png" type="image/png">
+	<link rel="stylesheet" href="{$baseUri}css/zp-compressed.css" type="text/css" media="screen, projection">
+
+	<link rel="stylesheet" media="screen,projection,tv" href="{$baseUri}css/jquery.lightbox-0.5.css" type="text/css">
+	<link rel="stylesheet" media="screen,projection,tv" href="{$baseUri}css/paginator.css" type="text/css">
+
+	<link rel="stylesheet" media="screen,projection,tv" href="{$baseUri}css/screen6.css" type="text/css">
+	<link rel="stylesheet" media="print" href="{$baseUri}css/print.css" type="text/css">
+
+	{block #metaOpenGraph}{/block}
+
+	
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29373634-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>	
+    </head>
+
+    <body>
+	<div id="header">
+	    <div class="zp-wrapper">
+		<div class="fp-3 logo"><a href="/">Forum publicum (homepage)</a></div>
+	    </div>
+	</div> <!-- header -->
+	<div class="zp-wrapper">
+	    <div class="fp-3 fp-dash-1">{include #content}</div>
+	</div>
+			
+		
+
+    </body>
+</html>
