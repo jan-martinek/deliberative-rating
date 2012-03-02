@@ -2,3 +2,4 @@ cache/
 temp/
 libs/
 PHPMailer_v5.1
+config.ini
