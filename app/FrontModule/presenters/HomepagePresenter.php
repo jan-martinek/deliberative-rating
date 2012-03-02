@@ -111,11 +111,11 @@ class Front_HomepagePresenter extends FrontPresenter {
 
 		$options = array(
 			'0' => '',
-			'5' => ' ★ ★ ★ ★ ★ ',
+			'5' => ' ★ ★ ★ ★ ★ skvělý projekt',
 			'4' => ' ★ ★ ★ ★ ',
 			'3' => ' ★ ★ ★ ',
 			'2' => ' ★ ★ ',
-			'1' => ' ★ '
+			'1' => ' ★ slabý projekt'
 		);
 		
  		$categories = $this->round->getRatingCategories();
