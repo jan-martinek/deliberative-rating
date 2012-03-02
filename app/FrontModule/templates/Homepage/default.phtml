@@ -1,0 +1,29 @@
+{block #title}Projektová kola{/block}
+
+
+{block #content}
+<h1>{include #title}</h1>
+
+{if !count($rounds)} 
+
+<p class="blank">Zatím žádná vložená kola hodnocení projektů</p>
+
+{else}
+	<ul>
+	{foreach $rounds as $round}
+		
+		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong><br> vloženo {$round->createdDATE|date: "%e. %B %Y"}
+	
+	{/foreach}
+	</ul>
+{/if}
+
+
+
+
+{if $user->isAllowed('round', 'edit')}
+
+	<hr>
+	<h2>Vložit nové projektové kolo</h2>
+	{control editRoundForm}
+{/if}

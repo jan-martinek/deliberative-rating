@@ -1,0 +1,45 @@
+{block #title}{$round->name}{/block}
+
+
+{block #content}
+<h1>Projektové kolo: {include #title}</h1>
+<p>Právě probíhá fáze <strong>{$round->getPhaseName()}</strong>.</p>
+
+
+<h2>Předložené projekty</h2>
+{if !count($projects)} 
+
+<p class="blank">Zatím žádné projekty</p>
+
+{else}
+	<table>
+	{foreach $projects as $project}
+		<tr>
+			<th>Název projektu</th>
+			<th>Hodnocení v prvním kole</th>
+			<th>Hodnocení ve druhém kole</th>
+			<th>Celkové hodnocení</th>
+		</tr>
+		<tr>
+			<th><a href="{link Homepage:project, $project->id}">{$project->name}</a></th>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		
+		{* vloženo {$round->createdDATE|date: "%e. %B %Y"} *}
+	
+	{/foreach}
+	</table>
+{/if}
+
+
+
+
+{if $user->isAllowed('round', 'edit')}
+
+	<hr>
+	
+	<h2>Vložit projekt</h2>
+	{control editProjectForm}
+{/if}

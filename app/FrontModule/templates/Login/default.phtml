@@ -1,0 +1,19 @@
+{block #title}Přihlášení{/block}
+{var robots => noindex}
+
+{block #content}
+<div class="wrapper">
+<h1>Přihlášení</h1>
+
+	<div class="articleInfo box">
+	{control loginForm begin}
+	{control loginForm errors}
+	<table>
+	{var form => $control['loginForm']}
+	<tr><th>{$form['email']->label}</th><td>{$form['email']->control}</td>
+	<tr><th>{$form['password']->label}</th><td>{$form['password']->control}</td>
+	<tr><td></td><td>{$form['login']->control}</td>
+	</table>
+	{control loginForm end}
+	</div>
+</div>

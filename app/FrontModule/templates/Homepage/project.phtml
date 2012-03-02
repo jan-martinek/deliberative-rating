@@ -1,0 +1,34 @@
+{block #title}Projekt – {$project->name}{/block}
+
+
+{block #content}
+<h1>{include #title}</h1>
+<p>Žadatel: {$project->applicant} | Grantové kolo: <a href="{link Homepage:round, $round->id}">{$round->name}</a></p>
+
+<iframe src="/files/application-{$project->id}.pdf" style="width: 760px; height: 500px"></iframe>
+
+
+
+
+{if $user->isAllowed('project', 'rate')}
+	<h2>Hodnotit projekt</h2>
+	
+	{control rateProjectForm begin}
+	{control rateProjectForm errors}
+	<table>
+	{var form => $control['rateProjectForm']}
+	
+	<tr>
+	{foreach $form->components as $itemId => $item}
+		{if $itemId > 0}
+			<td style="width: 20%; vertical-align: top;">{$item->label}<br>{$item->control}<br><small style="margin-top: 1em; display: block; line-height: 1.2em">{$item->getOption('description')}</small></td>
+		{/if}
+	{/foreach}
+	</tr>
+	</table>
+	{$form['submit']->control}
+	
+	{control rateProjectForm end}
+	</div>	
+	
+{/if}

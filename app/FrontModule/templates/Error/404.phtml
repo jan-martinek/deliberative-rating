@@ -1,0 +1,13 @@
+{layout layout.phtml}
+
+{var robots => noindex}
+
+{block #title}Chyba 404 - Nenalezeno{/block}
+
+{block #content}
+
+<h1>{if isset($message) AND $message AND !strpos($message, 'not found')}{$message}
+{else}Stránka nenalezena!{/if}<br> (Chyba 404)</h1>
+
+<p>Požadovanou stránku nemůžeme najít. Pokud si myslíte, že by tu rozhodně měla být, 
+    napište našemu administrátorovi <a href="mailto:admin@forumpublicum.sk">e-mail</a>.</p>
