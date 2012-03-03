@@ -7,8 +7,8 @@ class LogManager extends DbManager {
 
 	public function log($event) {
 		$values = array('time%sql' => 'NOW()', 'event%s' => $event);
-		$log = new LogRecord();
-		
+		$log = new LogRecord($values);
+		$this->create($log);		
 	}
 
 }

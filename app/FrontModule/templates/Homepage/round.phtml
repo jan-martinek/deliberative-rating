@@ -13,23 +13,23 @@
 
 {else}
 	<table>
-	{foreach $projects as $project}
 		<tr>
 			<th>Název projektu</th>
-			<th>Hodnocení v prvním kole</th>
-			<th>Hodnocení ve druhém kole</th>
-			<th>Celkové hodnocení</th>
+			<th>1. hodnocení</th>
+			<th>2. hodnocení</th>
+			<th>Celkem</th>
 		</tr>
-		<tr>
-			<th><a href="{link Homepage:project, $project->id}">{$project->name}</a></th>
-			<td></td>
-			<td></td>
-			<td></td>
-		</tr>
+		{foreach $projects as $project}
+			<tr {if $iterator->isOdd()}class="odd"{/if}>
+				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a><br>{$project->applicant}</td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
 		
-		{* vloženo {$round->createdDATE|date: "%e. %B %Y"} *}
+			{* vloženo {$round->createdDATE|date: "%e. %B %Y"} *}
 	
-	{/foreach}
+		{/foreach}
 	</table>
 {/if}
 

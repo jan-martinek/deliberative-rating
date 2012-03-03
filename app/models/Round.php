@@ -24,15 +24,15 @@ class Round extends Record {
  		return $ratingCategoryManager->findByRound($this->id);
 	}
 	
-	public function getProjectsRating() {
-		$where = array('roundID%i' => $this->id, 'projects.id%n' => 'rating.projectID');
+	public function getProjectsRating($phase) {
+		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'rating.projectID');
 		return dibi::query('SELECT projects.id as projectID, ratingCategoryID, count(*) as count, avg(rating) as avgRating 
 			FROM projects, rating WHERE %and', $where, 
 			'GROUP BY projects.id, rating.ratingCategoryID')->fetchAssoc('projectID, ratingCategoryID');
 	}
 	
-	public function countProjectRatings() {
-		$ratings = $this->getProjectsRating();
+	public function countProjectRatings($phase) {
+		$ratings = $this->getProjectsRating($phase);
 		
 		if (!count($ratings)) return;
 		
@@ -42,8 +42,8 @@ class Round extends Record {
 				$ratings[] = $rating['avgRating'];
 			}
 			$avgRating = array_sum($ratings)/count($ratings);
-			
-			dibi::query('UPDATE projects SET rating = %f', $avgRating, ' WHERE id = %i', $projectID);
+
+			dibi::query('UPDATE projects SET [' . $phase . '] = %f', $avgRating, ' WHERE id = %i', $projectID);
 		}
 	}
 	

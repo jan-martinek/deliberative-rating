@@ -3,32 +3,60 @@
 
 {block #content}
 <h1>{include #title}</h1>
-<p>Žadatel: {$project->applicant} | Grantové kolo: <a href="{link Homepage:round, $round->id}">{$round->name}</a></p>
+<p>Žadatel: {$project->applicant} | Grantové kolo: <a href="{link Homepage:round, $round->id}">{$round->name}</a>
+{if trim($project->otherLinks) != ''}
+	{? $otherLinks = explode("\n", $project->otherLinks)}
+	
+	 <br>Přílohy: 
+	{foreach $otherLinks as $link}
+		{? $pathInfo = pathinfo(trim($link))}
+		<a href="{=trim($link)}">{$pathInfo['basename']}</a>{if !$iterator->isLast()},{/if}
+	{/foreach}
+{/if}
+</p>
 
-<iframe src="/files/application-{$project->id}.pdf" style="width: 760px; height: 500px"></iframe>
-
-
-
+<iframe src="{=trim($project->applicationLink)}" style="width: 760px; height: 500px"></iframe>
 
 {if $user->isAllowed('project', 'rate')}
-	<h2>Hodnotit projekt</h2>
-	
+<h2>Hodnotit projekt
+	{if $round->phase == 'firstRating'}(poprvé, před diskusí){/if}
+	{if $round->phase == 'secondRating'}(podruhé, po diskusi){/if}
+</h2>
+
+{if !($round->phase == 'firstRating' OR $round->phase == 'secondRating')}
+	<p>Právě neprobíhá fáze hodnocení (probíhá fáze „{$round->getPhaseName()}“)</p>
+{else}
 	{control rateProjectForm begin}
 	{control rateProjectForm errors}
+
+	{var form => $control['rateProjectForm']}	
+	{var ratingsValues = $project->getRatings($round->phase, $user->getId())}
+	{var eligibilityValues = $project->getEligibility($round->phase, $user->getId())}
+	{if $ratingsValues}{? $form->setValues($ratingsValues)}{/if}
+	{if $eligibilityValues}
+		{? $form['notEligible']->setValue($eligibilityValues->notEligible)}
+		{? $form['notEligibleReasons']->setValue($eligibilityValues->reasons)}
+	{/if}
 	<table>
-	{var form => $control['rateProjectForm']}
+
 	
 	<tr>
 	{foreach $form->components as $itemId => $item}
 		{if $itemId > 0}
-			<td style="width: 20%; vertical-align: top;">{$item->label}<br>{$item->control}<br><small style="margin-top: 1em; display: block; line-height: 1.2em">{$item->getOption('description')}</small></td>
+			<td style="width: 33%; vertical-align: top;"><strong>{$item->label}</strong><br>
+				{$item->control}<br>
+				<span style="margin-top: 1em; display: block; line-height: 1.2em">{$item->getOption('description')}</span></td>
+			
+		{if $iterator->getCounter()%3 == 0}</tr><tr>{/if}
 		{/if}
 	{/foreach}
 	</tr>
 	</table>
+	<p>{$form['notEligible']->control} {$form['notEligible']->label}</p>
+	<p id="eligibility">{$form['notEligibleReasons']->label}<br>{$form['notEligibleReasons']->control} </p>
 	{$form['submit']->control}
 	
 	{control rateProjectForm end}
-	</div>	
-	
+	</div>
+{/if}	
 {/if}

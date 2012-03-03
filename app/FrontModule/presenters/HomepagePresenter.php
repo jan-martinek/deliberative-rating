@@ -61,7 +61,9 @@ class Front_HomepagePresenter extends FrontPresenter {
 
 		$form->addText('name', 'Název projektu');
 		$form->addText('applicant', 'Žadatel');
-		$form->addFile('application', 'Žádost (PDF)');
+		$form->addText('applicationLink', 'Odkaz na žádost (PDF)');
+		$form->addTextArea('otherLinks', 'Odkazy na další dokumenty (PDF)')
+			->setOption('description', 'Vkládejte každý odkaz na samostatný řádek.');
 		$form->addSubmit('submit', 'Uložit projekt');
 		
 		$form->onSubmit[] = callback($this, 'editProjectFormSubmitted');
@@ -71,14 +73,15 @@ class Front_HomepagePresenter extends FrontPresenter {
 	public function editProjectFormSubmitted($form) {
 		$values = $form->getValues();
 		
-		$project = new Project(array('roundID' => $this->roundID, 
-			'name' => $values['name'], 
-			'applicant' => $values['applicant']));
+		$project = new Project($values);
+		$project->roundID = $this->roundID;
+		
 		$projectManager = new ProjectManager;
 		$projectManager->create($project);
 		
-		$id = dibi::insertId();
-		$values['application']->move(WWW_DIR . '/files/application-' .  $id . '.pdf');
+		//usable only if files could be stored locally
+		//$id = dibi::insertId();
+		//$values['application']->move(WWW_DIR . '/files/application-' .  $id . '.pdf');
 		
 		$this->flashMessage('Projekt byl uložen.');
 		$this->redirect('this');		
@@ -121,7 +124,11 @@ class Front_HomepagePresenter extends FrontPresenter {
  		$categories = $this->round->getRatingCategories();
 		foreach ($categories as $id => $category) {
 			$form->addSelect($id, $category->name, $options)->setOption('description', $category->description);
-		}
+		}	
+		
+		$form->addCheckBox('notEligible', 'Projekt není vhodné podpořit')
+			->addCondition(Form::EQUAL, 1)->toggle('eligibility');		
+		$form->addTextArea('notEligibleReasons', 'Zdůvodnění nevhodnosti k podpoře', 20, 4);
 		
 		$form->addSubmit('submit', 'Uložit hodnocení');
 		
@@ -132,7 +139,17 @@ class Front_HomepagePresenter extends FrontPresenter {
 	public function rateProjectFormSubmitted($form) {
 		$values = $form->getValues();
 		
-		//save
+		$jurorID = Environment::getUser()->getId();
+		
+		$rating = array();
+		foreach ($values as $id => $value) {
+			if ($id > 0 AND $value >= 0 AND $value <= 5) {
+				$rating[$id] = $value;
+			}
+		}
+		$this->project->rate($rating, $jurorID);
+		
+		$this->project->setEligibility($values['notEligible'], $values['notEligibleReasons'], $jurorID);		
 		
 		$this->flashMessage('Hodnocení bylo uloženo.');
 		$this->redirect('this');		
