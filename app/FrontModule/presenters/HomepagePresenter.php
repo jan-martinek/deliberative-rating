@@ -154,29 +154,4 @@ class Front_HomepagePresenter extends FrontPresenter {
 		$this->flashMessage('Hodnocení bylo uloženo.');
 		$this->redirect('this');		
 	}	
-	
-    protected function createComponentNewsletterForm() {
-	$form = new AppForm;
-	$form->getElementPrototype()->addClass('newsletterForm');
-
-	$form->addText('address', 'Váš e-mail')
-		->addRule(Form::FILLED, 'Prosím, zadejte e-mailovou adresu')
-		->addRule(Form::EMAIL, 'Prosím, zadejte platnou e-mailovou adresu.');
-
-	$form->addSubmit('subscribe', 'OK');
-
-	$form->onSubmit[] = callback($this, 'newsletterFormSubmitted');
-	return $form;
-    }
-
-    public function newsletterFormSubmitted($form) {
-	$values = $form->getValues();
-
-	$subscriber = new NewsletterSubscriber(array('address' => $values['address']));
-	$newsletterManager = new NewsletterManager;
-	$newsletterManager->create($subscriber);
-
-	$this->flashMessage('Váš newsletter byl úspěšně zaregistrován. Děkujeme!');
-	$this->redirect('this');
-    }
 }
