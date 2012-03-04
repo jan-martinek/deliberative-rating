@@ -8,6 +8,39 @@ class Front_SettingsPresenter extends FrontPresenter {
 		
 	}	
 	
+	public function actionManageJurors() {
+		$jurorManager = new JurorManager;
+		$this->template->jurors = $jurorManager->findAll(array('role' => 'ASC', 'name' => 'ASC'));
+	}
+	
+    protected function createComponentCreateJurorForm() {
+		$form = new AppForm;
+
+		$form->addText('name', 'Jméno');
+		$form->addText('email', 'E-mail');
+		$form->addText('number', 'UČO');
+		
+		$form->addSubmit('create', 'Přidat uživatele');
+
+		$form->onSubmit[] = callback($this, 'createJurorFormSubmitted');
+		return $form;
+    }
+
+    public function createJurorFormSubmitted($form) {
+		$values = $form->getValues();
+		
+		$juror = new Juror($values);
+		$jurorManager = new JurorManager;
+		$jurorManager->create($juror);
+		
+		$this->flashMessage('Porotce byl přidán.');
+		$this->redirect('this');
+    }	
+	
+	public function actionManageCategories() {
+		
+	}
+	
 	public function actionCreatePassword($id) {
 		$this->id = $id;
 		
@@ -24,12 +57,8 @@ class Front_SettingsPresenter extends FrontPresenter {
 		$form->addPassword('passwordCheck', 'Ověření hesla')
 		->addRule(Form::EQUAL, 'Hesla musí být stejné', $form['password']);
 		
-		
-		$jurorManager = new JurorManager;
-		$juror = $jurorManager->find($this->id);
-		$form->addHidden('id')->setValue(md5($juror->id . 'x'));		
-
-		$form->addSubmit('finish', 'Dokončit registraci');
+		$form->addHidden('id')->setValue($this->id);
+		$form->addSubmit('finish', 'Nastavit heslo');
 
 		$form->onSubmit[] = callback($this, 'createPasswordFormSubmitted');
 		return $form;
@@ -37,9 +66,13 @@ class Front_SettingsPresenter extends FrontPresenter {
 
     public function createPasswordFormSubmitted($form) {
 		$values = $form->getValues();
-
-		dibi::query('UPDATE jurors SET password = %s', md5($values['password']), 'WHERE id = %i', $i);
-
+		
+		$jurorManager = new JurorManager;
+		$juror = $jurorManager->find($values['id']);
+		$juror->password = sha1($values['password']);
+		$juror->active = 1;
+		$juror->save();
+		
 		$this->flashMessage('Vaše heslo bylo úspěšně nastaveno. Pokračujte přihlášením.');
 		$this->redirect('this');
     }

@@ -52,7 +52,7 @@ class Front_LoginPresenter extends FrontPresenter {
 	//savana workaround
 	$jurorManager = new JurorManager;
 	if (!$jurorManager->findAll(NULL, array('[email] = "' . $values['email'] . '"',
-	    '[password] = "' . md5($values['password']) . '"'))->fetch()) {
+	    '[password] = "' . sha1($values['password']) . '"'))->fetch()) {
 	    $form->addError('Nesprávny e-mail alebo heslo.');
 	    return;
 	}

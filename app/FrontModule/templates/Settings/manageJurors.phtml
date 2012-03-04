@@ -1,0 +1,29 @@
+{block #title}Porotci{/block}
+
+
+{block #content}
+<h1>{include #title}</h1>
+<ul>
+{foreach $jurors as $juror}
+	<li><strong>{$juror->name}</strong><em> &mdash; {$juror->getRoleText()}</em><br>
+		e-mail: <a href="mailto:{$juror->email}">{$juror->email}</a> |
+		<a href="http://is.muni.cz/auth/lide/{$juror->number}">profil v ISu</a>
+		{if $user->isAllowed('juror', 'manage')}	
+			<a class="redFlag" href="">smazat</a>
+	
+			{if $juror->active == 0}	
+				{var token = sha1($juror->password)}
+
+				<span class="box">Porotce zatím neaktivoval svůj účet. Adresa pro aktivaci účtu a nastavení hesla:<br>
+				<a href="{link //Settings:createPassword, id => $juror->id, token => $token}">{link //Settings:createPassword, id => $juror->id, token => $token}</a><br>
+				</span>
+			{/if}
+		{/if}
+	</li>
+{/foreach}
+</ul>
+
+{if $user->isAllowed('juror', 'manage')}	
+<h1>Přidat porotce</h1>
+{control createJurorForm}
+{/if}

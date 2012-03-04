@@ -5,21 +5,14 @@ class JurorManager extends DbManager  implements IAuthenticator {
 	protected $RecordClass = 'Juror';
 
 	public function create(Record $record) {
-	    //vytvořit barvu podle stringu jména
-	    if (!isset($record->color) OR $record->color == '') {
-		$record->color = $this->colorFromName($record->publicName);
-	    }
+	   	$record->password = sha1(rand(0,10000000).rand(0,10000000));
+		$record->active = 0;
 
 	    return parent::create($record);
 	}
 
 	public function findAllByRole($role) {
-	    return dibi::query('SELECT * FROM [' . $this->table . '] WHERE active = 1 AND role = %s', $role)->fetchAll();
-	}
-
-	
-	public function getCacheKey() {
-	    return md5(dibi::query('SHOW TABLE STATUS LIKE %s', $this->table)->fetch()->Update_time);
+	    return dibi::query('SELECT * FROM [' . $this->table . '] WHERE role = %s', $role)->fetchAll();
 	}
 
 	/**
@@ -31,7 +24,7 @@ class JurorManager extends DbManager  implements IAuthenticator {
 	public function authenticate(array $credentials)
 	{
 		$username = $credentials[self::USERNAME];
-		$password = md5($credentials[self::PASSWORD]);
+		$password = sha1($credentials[self::PASSWORD]);
 
 		$row = dibi::fetch('SELECT * FROM jurors WHERE email = %s', $username);
 

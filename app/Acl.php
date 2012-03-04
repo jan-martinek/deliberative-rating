@@ -11,11 +11,13 @@ class Acl extends Permission {
 		// definujeme zdroje
 		$this->addResource('round');
 		$this->addResource('project');
+		$this->addResource('juror');
 
 	
 		$this->allow('juror', 'project', 'rate');
 		$this->allow('chairman', 'round', 'edit');
 			
+		$this->allow('chairman', 'juror', 'manage');
 
 		//webmaster
 		$this->allow('webmaster', Permission::ALL);
