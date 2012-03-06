@@ -1,4 +1,11 @@
 Deliberativní systém hodnocení projektů
 
-(Prozatím z velké části nehotové, ani se to nepokoušejte stahovat.)
+(Prozatím z velké části nehotové a nefunkční, ani se to nepokoušejte stahovat.)
 
+Závislosti:
+
+– Nette 2.0 dev pro PHP 5.2 (přepis pro aktuální Nette a PHP 5.3 v plánu)
+– dibi
+– texy 2
+
+Knihovny nahrávejte do složky /libs/.
