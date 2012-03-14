@@ -28,7 +28,7 @@ class Round extends Record {
 		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'rating.projectID');
 		return dibi::query('SELECT projects.id as projectID, ratingCategoryID, count(*) as count, avg(rating) as avgRating 
 			FROM projects, rating WHERE %and', $where, 
-			'GROUP BY projects.id, rating.ratingCategoryID')->fetchAssoc('projectID, ratingCategoryID');
+			'GROUP BY projects.id, rating.ratingCategoryID')->fetchAssoc('projectID,ratingCategoryID');
 	}
 	
 	public function countProjectRatings($phase) {
@@ -45,6 +45,14 @@ class Round extends Record {
 
 			dibi::query('UPDATE projects SET [' . $phase . '] = %f', $avgRating, ' WHERE id = %i', $projectID);
 		}
+	}
+	
+	public function getProjectsRatingCounts($phase) {
+		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'eligibilities.projectID');
+		
+		return dibi::query('SELECT projects.id AS id, count(*) AS count 
+			FROM eligibilities, projects where %and', $where, 
+			'GROUP BY projects.id')->fetchPairs('id', 'count');
 	}
 	
 	public function getPhaseName($phase = NULL) {

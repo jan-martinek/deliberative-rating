@@ -22,7 +22,14 @@
 		{foreach $projects as $project}
 			<tr {if $iterator->isOdd()}class="odd"{/if}>
 				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a><br>{$project->applicant}</td>
-				<td></td>
+				<td>
+					{if $round->phase == 'firstRating'}
+						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
+						{if $ratingCount}Již hodnotilo<br> {$ratingCount} z 5 porotců.{else}Zatím nehodnoceno.{/if}
+					{/if}
+					
+					
+				</td>
 				<td></td>
 				<td></td>
 			</tr>

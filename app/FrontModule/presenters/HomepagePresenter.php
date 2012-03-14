@@ -43,7 +43,14 @@ class Front_HomepagePresenter extends FrontPresenter {
 		$this->roundID = $id;
 		
 		$projectManager = new ProjectManager;
-		$this->template->projects = $projectManager->findAll(array('name' => 'ASC'), array('roundID' => $this->roundID));		
+		$this->template->projects = $projectManager->findAll(array('name' => 'ASC'), array('roundID' => $this->roundID));
+		
+		switch ($this->round->phase) {
+			case 'firstRating':
+				$this->template->ratingCounts = $this->round->getProjectsRatingCounts($this->round->phase);
+				break;
+		}
+				
 	}
 	
 	public function renderRound() {		
