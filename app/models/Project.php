@@ -47,26 +47,59 @@ class Project extends Record {
 			'ON DUPLICATE KEY UPDATE reasons = %s', $reasons, ', notEligible = %i', $notEligible);
 	}
 	
-	public function getRatings($phase, $jurorID = NULL) {
+	public function getRatings($phase, $jurorID = NULL, $sortBy = NULL) {
+
+		$where = array(
+			'projectID%i' => $this->id,
+			'phase%s' => $phase
+		);
 		if ($jurorID) {
-			$where = array(
-				'jurorID%i' => $jurorID,
-				'projectID%i' => $this->id,
-				'phase%s' => $phase
-			);
-			return dibi::query('SELECT ratingCategoryID, rating FROM ratings WHERE %and', $where)
-				->fetchPairs('ratingCategoryID', 'rating');			
+			$where['jurorID%i'] = $jurorID;
+		}			
+		
+		$result = dibi::query('SELECT ratingCategoryID, jurorID, rating FROM ratings WHERE %and', $where);
+
+		if ($jurorID) return $result->fetchPairs('ratingCategoryID', 'rating');
+		else {
+			$allRatings = $result->fetchAll();
+			$result = array();
+			
+			foreach ($allRatings as $rating) {
+				switch ($sortBy) {
+					case 'juror':
+						$result[$rating->jurorID][$rating->ratingCategoryID] = $rating->rating;
+						break;
+
+					case 'category':
+					default:
+						$result[$rating->ratingCategoryID][$rating->jurorID] = $rating->rating;
+						break;					
+				}
+			}
+			return $result;
 		}
 	}
 	
-	public function getEligibility($phase, $jurorID = NULL) {
-		if ($jurorID) {
-			$where = array(
-				'jurorID%i' => $jurorID,
-				'projectID%i' => $this->id,
-				'phase%s' => $phase
-			);
-			return dibi::query('SELECT notEligible, reasons FROM eligibilities WHERE %and', $where)->fetch();
-		}
+	public function getRatingsByCategory($phase) {
+		return $this->getRatings($phase, NULL, 'category');
 	}
+	
+	public function getRatingsByJuror($phase) {		
+		return $this->getRatings($phase, NULL, 'juror');
+	}
+	
+	public function getEligibility($phase, $jurorID = NULL) {
+		$where = array(
+			'projectID%i' => $this->id,
+			'phase%s' => $phase
+		);
+		if ($jurorID) {
+			$where['jurorID%i'] = $jurorID;
+		}
+		
+		$result = dibi::query('SELECT * FROM eligibilities WHERE %and', $where);
+		
+		if ($jurorID) return $result->fetch();
+		else return $result->fetchAll();
+	}	
 }

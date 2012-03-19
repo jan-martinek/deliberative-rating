@@ -36,6 +36,29 @@ class Front_HomepagePresenter extends FrontPresenter {
 		$this->flashMessage('Projektové kolo bylo vytvořeno.');
 		$this->redirect('this');		
 	}
+
+	public function createComponentSwitchPhaseForm() {
+		$form = new AppForm;
+
+		$round = new Round(array());
+		$form->addSelect('phase', 'Fáze', $round->getPhases());
+		$form->addHidden('id');
+		$form->addSubmit('submit', 'Přepnout fázi projektového kola');
+		
+		$form->onSubmit[] = callback($this, 'switchPhaseFormSubmitted');
+		return $form;		
+	}	
+	
+	public function switchPhaseFormSubmitted($form) {
+		$values = $form->getValues();
+		
+		$roundManager = new RoundManager;
+		$round = $roundManager->find($values['id']);
+		$round->setPhase($values['phase'], Environment::getUser()->getId());
+		
+		$this->flashMessage('Fáze projektového kola byla změněna.');
+		$this->redirect('this');		
+	}	
 	
 	public function actionRound($id) {
 		$roundManager = new RoundManager;
@@ -43,12 +66,31 @@ class Front_HomepagePresenter extends FrontPresenter {
 		$this->roundID = $id;
 		
 		$projectManager = new ProjectManager;
-		$this->template->projects = $projectManager->findAll(array('name' => 'ASC'), array('roundID' => $this->roundID));
+		
+		switch ($this->round->phase) {
+			
+			case 'deliberation':
+				$sort = array('firstRatingIneligibilityBool' => 'ASC', 'firstRating' => 'DESC');			
+				break;
+			case 'results':
+				$sort = array('secondRatingIneligibilityBool' => 'ASC', 'avgRating' => 'DESC');
+				break;
+			case 'preparation':
+			case 'firstRating':
+			case 'secondRating':
+			default:
+				$sort = array('name' => 'ASC');
+				break;
+		}
+		
+		$this->template->projects = $projectManager->findAllWithAverages($sort, array('roundID' => $this->roundID));
 		
 		switch ($this->round->phase) {
 			case 'firstRating':
+			case 'secondRating':
 				$this->template->ratingCounts = $this->round->getProjectsRatingCounts($this->round->phase);
 				break;
+
 		}
 				
 	}
@@ -108,6 +150,9 @@ class Front_HomepagePresenter extends FrontPresenter {
 	public function renderProject() {				
 		switch ($this->round->phase) {
 			case 'deliberation':
+				$this->template->ratings = $this->project->getRatingsByCategory('firstRating');
+				$this->template->eligibility = $this->project->getEligibility('firstRating');
+				$this->template->categories = $this->round->getRatingCategories();
 				break;
 				
 			case 'results':

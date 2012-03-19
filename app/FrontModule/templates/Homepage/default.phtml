@@ -12,8 +12,13 @@
 	<ul>
 	{foreach $rounds as $round}
 		
-		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong><br> vloženo {$round->createdDATE|date: "%e. %B %Y"}
-	
+		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong><br> 
+			vloženo {$round->createdDATE|date: "%e. %B %Y"}
+			{var form = $control['switchPhaseForm']}
+			{? $form['phase']->setValue($round->phase)}
+			{? $form['id']->setValue($round->id)}
+			{control switchPhaseForm}
+		</li>
 	{/foreach}
 	</ul>
 {/if}

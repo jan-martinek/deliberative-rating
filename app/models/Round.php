@@ -10,6 +10,17 @@ class Round extends Record {
 		$jurorManager = new JurorManager;
 		$juror = $jurorManager->find($jurorID);
 		
+		if ($phase = 'deliberation') {
+			$this->countProjectRatings('firstRating');
+			$this->countProjectsIneligibilityCounts('firstRating');
+		} elseif ($phase = 'results') {
+			$this->countProjectRatings('secondRating');
+			$this->countProjectsIneligibilityCounts('secondRating');			
+		}
+
+		$this->phase = $phase;
+		$this->save();
+		
 		$logManager = new LogManager;
 		$logManager->log('Předseda ' . $juror->name . ' změnil fázi rozhodování na "' . $this->getPhaseName($phase) . '".');
 	}
@@ -25,10 +36,25 @@ class Round extends Record {
 	}
 	
 	public function getProjectsRating($phase) {
-		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'rating.projectID');
+		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'ratings.projectID');
 		return dibi::query('SELECT projects.id as projectID, ratingCategoryID, count(*) as count, avg(rating) as avgRating 
-			FROM projects, rating WHERE %and', $where, 
-			'GROUP BY projects.id, rating.ratingCategoryID')->fetchAssoc('projectID,ratingCategoryID');
+			FROM projects, ratings WHERE %and', $where, 
+			'GROUP BY projects.id, ratings.ratingCategoryID')->fetchAssoc('projectID,ratingCategoryID');
+	}
+	
+	public function getProjectsIneligibilityCounts($phase) {
+		$where = array('notEligible' => 1,'phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'eligibilities.projectID');
+		return dibi::query('SELECT projects.id as projectID, count(*) as count 
+			FROM projects, eligibilities WHERE %and', $where, 
+			'GROUP BY projects.id')->fetchPairs('projectID', 'count');
+	}
+	
+	public function countProjectsIneligibilityCounts($phase) {
+		$ineligibilities = $this->getProjectsIneligibilityCounts($phase);
+		
+		foreach ($ineligibilities as $projectID => $count) {
+			dibi::query('UPDATE projects SET [' . $phase . 'Ineligibility] = %i', $count, ' WHERE id = %i', $projectID);
+		}
 	}
 	
 	public function countProjectRatings($phase) {

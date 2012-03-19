@@ -17,46 +17,61 @@
 
 <iframe src="{=trim($project->applicationLink)}" style="width: 760px; height: 500px"></iframe>
 
-{if $user->isAllowed('project', 'rate')}
-<h2>Hodnotit projekt
-	{if $round->phase == 'firstRating'}(poprvé, před diskusí){/if}
-	{if $round->phase == 'secondRating'}(podruhé, po diskusi){/if}
-</h2>
 
-{if !($round->phase == 'firstRating' OR $round->phase == 'secondRating')}
-	<p>Právě neprobíhá fáze hodnocení (probíhá fáze „{$round->getPhaseName()}“)</p>
-{else}
-	{control rateProjectForm begin}
-	{control rateProjectForm errors}
+{if $round->phase == 'firstRating' OR $round->phase == 'secondRating'}	
+	{if $user->isAllowed('project', 'rate')}
+		<h2>Hodnotit projekt
+			{if $round->phase == 'firstRating'}(poprvé, před diskusí){/if}
+			{if $round->phase == 'secondRating'}(podruhé, po diskusi){/if}
+		</h2>
 
-	{var form => $control['rateProjectForm']}	
-	{var ratingsValues = $project->getRatings($round->phase, $user->getId())}
-	{var eligibilityValues = $project->getEligibility($round->phase, $user->getId())}
-	{if $ratingsValues}{? $form->setValues($ratingsValues)}{/if}
-	{if $eligibilityValues}
-		{? $form['notEligible']->setValue($eligibilityValues->notEligible)}
-		{? $form['notEligibleReasons']->setValue($eligibilityValues->reasons)}
-	{/if}
-	<table>
+		{control rateProjectForm begin}
+		{control rateProjectForm errors}
 
-	
-	<tr>
-	{foreach $form->components as $itemId => $item}
-		{if $itemId > 0}
-			<td style="width: 33%; vertical-align: top;"><strong>{$item->label}</strong><br>
-				{$item->control}<br>
-				<span style="margin-top: 1em; display: block; line-height: 1.2em">{$item->getOption('description')}</span></td>
-			
-		{if $iterator->getCounter()%3 == 0}</tr><tr>{/if}
+		{var form => $control['rateProjectForm']}	
+		{var ratingsValues = $project->getRatings($round->phase, $user->getId())}
+		{var eligibilityValues = $project->getEligibility($round->phase, $user->getId())}
+		{if $ratingsValues}{? $form->setValues($ratingsValues)}{/if}
+		{if $eligibilityValues}
+			{? $form['notEligible']->setValue($eligibilityValues->notEligible)}
+			{? $form['notEligibleReasons']->setValue($eligibilityValues->reasons)}
 		{/if}
-	{/foreach}
-	</tr>
-	</table>
-	<p>{$form['notEligible']->control} {$form['notEligible']->label}</p>
-	<p id="eligibility">{$form['notEligibleReasons']->label}<br>{$form['notEligibleReasons']->control} </p>
-	{$form['submit']->control}
+		<table>
+
 	
-	{control rateProjectForm end}
-	</div>
-{/if}	
+		<tr>
+		{foreach $form->components as $itemId => $item}
+			{if $itemId > 0}
+				<td style="width: 33%; vertical-align: top;"><strong>{$item->label}</strong><br>
+					{$item->control}<br>
+					<span style="margin-top: 1em; display: block; line-height: 1.2em">{$item->getOption('description')}</span></td>
+			
+			{if $iterator->getCounter()%3 == 0}</tr><tr>{/if}
+			{/if}
+		{/foreach}
+		</tr>
+		</table>
+		<p>{$form['notEligible']->control} {$form['notEligible']->label}</p>
+		<p id="eligibility">{$form['notEligibleReasons']->label}<br>{$form['notEligibleReasons']->control} </p>
+		{$form['submit']->control}
+	
+		{control rateProjectForm end}
+		</div>
+	{else}
+		<p>Právě probíhá fáze „{$round->getPhaseName()}“. Informace budou zveřejněny po skončení této fáze.</p>
+	{/if}	
+{elseif $round->phase == 'deliberation'}
+	<table>
+		<tr><th>Kategorie</th><th>Jednotlivá hodnocení</th><th>Průměr</th></tr>
+		{foreach $categories as $id => $category}
+			<tr>
+				<th>{$category->name}</th>
+				{? shuffle($ratings[$category->id])}
+				<td>{foreach $ratings[$category->id] as $rating}{$rating}{if !$iterator->isLast()}, {/if}{/foreach}</td>
+				<td>{=array_sum($ratings[$category->id])/count($ratings[$category->id])}</td>
+			</tr>
+		{/foreach}
+	</table>
+{elseif $round->phase == 'results'}
+	výsledky
 {/if}

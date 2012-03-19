@@ -1,10 +1,48 @@
 {block #title}{$round->name}{/block}
 
+{block #firstRatingRules}
+<ol><li>V první fázi členové Komise hodnotí žádosti  podle Kritérií hodnocení pro dané stipendijní kolo.
+</li><li>Hodnocení jednotlivých kritérií provádí komisař na pětistupňové škále. Nejlepším hodnocením je pět hvězdiček, nejhorším jedna hvězdička.
+</li><li>Komisař se též může rozhodnout, že neudělí žádnou hvězdičku, ale označí žádost jako “nevhodnou k podpoře”.
+</li><li>Pokud žádost získá alespoň od dvou komisařů hodnocení “nevhodné k podpoře”, nebude podpořena.
+</li><li>První fáze je uskutečňována prostřednictvím pomocného software.
+</li><li>První fáze musí být ukončena nejpozději 10 pracovních dnů po uzávěrce daného stipendijního kola.
+</li><li>Předseda ve spolupráci se SK neprodleně zveřejní výsledky hodnocení. Součástí zveřejnění jsou plná znění žádostí o stipendium a jejich průběžné pořadí. Dokumenty jsou zveřejněny ve formátu PDF.
+</li><li>Hlasování jednotlivých hodnotitelů jsou anonymizována, aby nebylo možné určit, který člen Komise jak hodnotil.</li></ol>
+{/block}
+
+{block #secondRatingRules}
+<ol><li>Ve druhé fázi hodnocení Komise rozhodne o konečném pořadí žádostí.
+</li><li>Rozhodnutí musí být provedeno s přihlédnutím k první fázi hodnocení a výsledkům veřejného zasedání.
+</li><li>Výsledkem práce Komise je řazený Seznam žádostí (dále jen Seznam), které mají být v tomto pořadí podpořeny. Seznam je řazen sestupně.
+</li><li>Žádosti, které dle názoru Komise nejsou vhodné k podpoře, jsou v Seznamu označeny “nevhodné k podpoře”.
+</li><li>Podporu získává každá žádost v Seznamu, dokud nejsou vyčerpány přidělené prostředky na dané stipendijní kolo. Prostředky nemůže získat žádost, která je označena jako “nevhodná k podpoře”.
+</li><li>Předseda komise předá Seznam do tří dnů zástupcům SK.
+</li><li>Studentská komora předá Seznam pověřenému proděkanovi do pěti pracovních dnů poté, co jej obdrží od předsedy Komise. Proděkan na základě tohoto Seznamu rozhodne o udělení stipendií. 
+</li><li>Předseda zveřejní Seznam do tří pracovních dnů poté, co je ukončena druhá fáze hodnocení.</li></ol>
+{/block}
+
+
+{block #preparation}
+	<p>Předseda komise právě plní systém žádostmi žadatelů. Zatím neprobíhá hlasování.</p>
+{/block}
+{block #firstRating}<p>Právě probíhá první hlasování podle následujících pravidel.</p>{include #firstRatingRules}{/block}
+{block #deliberation}<p>Hlasování skončilo, v nejbližších dnech by se mělo konat setkání se členy komise.
+	Hlasování proběhlo podle následujících pravidel:</p>{include #firstRatingRules}{/block}
+{block #secondRating}<p>Právě probíhá druhé hlasování podle následujících pravidel.</p>{include #secondRatingRules}{/block}
+{block #results}Druhé hlasování skončilo a níže vidíte konečné výsledky. 
+Hlasování proběhlo podle následujících pravidel:</p>{include #secondRatingRules}{/block}
+
 
 {block #content}
 <h1>Projektové kolo: {include #title}</h1>
 <p>Právě probíhá fáze <strong>{$round->getPhaseName()}</strong>.</p>
 
+{if $round->phase == 'preparation'}{include #preparation}{/if}
+{if $round->phase == 'firstRating'}{include #firstRating}{/if}
+{if $round->phase == 'deliberation'}{include #deliberation}{/if}
+{if $round->phase == 'secondRating'}{include #secondRating}{/if}
+{if $round->phase == 'results'}{include #results}{/if}
 
 <h2>Předložené projekty</h2>
 {if !count($projects)} 
@@ -19,13 +57,47 @@
 			<th>2. hodnocení</th>
 			<th>Celkem</th>
 		</tr>
+		
+		{var total = 0}
+		{var depleted = FALSE}
+		{var ineligible = FALSE}
 		{foreach $projects as $project}
+			{if $round->phase == 'deliberation' OR $round->phase == 'results'}			
+				{? $total += $project->amount}
+				{if ($round->phase == 'deliberation' AND $project->firstRatingIneligibilityBool) 
+					OR ($round->phase == 'results' AND $project->secondRatingIneligibilityBool)}
+					{var ineligible = TRUE}
+				{/if}
+				
+				{if !$depleted AND ($total >= $round->amount OR $ineligible)}
+					<tr><th colspan="4" style="border-top: 1px solid black; border-bottom: 1px solid black;">
+						{if $round->phase == 'deliberation'}Projekty pod touto hranicí by podle
+						výsledků prvního kola nebyly podpořeny.<br> Tento výsledek je zatím podkladem
+						pro diskusi! Po diskusi následuje ještě závěrečné hodnocení, které má
+						stejnou váhu. Přijďte na setkání prodiskutovat hodnocení s porotci. {/if}
+						{if $round->phase == 'results'}Projekty pod touto hranicí nebudou podpořeny.<br>
+						Zeptejte se porotců, jaký byl problém s Vaší žádostí. Pokud je toto váš
+						první pokus s touto žádostí, můžete to zkusit v příštím kole.{/if}
+					</th></tr>
+					{var depleted = TRUE}
+				{/if}
+			{/if}
+		
 			<tr {if $iterator->isOdd()}class="odd"{/if}>
-				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a><br>{$project->applicant}</td>
+				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a>
+					<br>{$project->applicant} &bull; {$project->amount} Kč</td>
+					
+					
 				<td>
 					{if $round->phase == 'firstRating'}
 						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
 						{if $ratingCount}Již hodnotilo<br> {$ratingCount} z 5 porotců.{else}Zatím nehodnoceno.{/if}
+					{elseif $round->phase == 'deliberation'}
+						{$project->firstRating}
+						
+						{if $project->firstRatingIneligibility > 0}
+							<span class="ineligible" title="Projekt byl {$project->firstRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->firstRatingIneligibility}!</span>
+						{/if}
 					{/if}
 					
 					
@@ -33,17 +105,60 @@
 				<td></td>
 				<td></td>
 			</tr>
+
 		
 			{* vloženo {$round->createdDATE|date: "%e. %B %Y"} *}
 	
 		{/foreach}
+		<tr><th colspan="4" style="border-top: 1px solid black;">Celková žádaná částka: {$total} Kč.<br>
+			Celkem rozdělováno v projektovém kole: {$round->amount} Kč.</th></tr>
 	</table>
 {/if}
 
 
 
+{* CHART IS NOT OPTIMIZED! *}
 
-{if $user->isAllowed('round', 'edit')}
+<h2>Graf podílu jednotlivých kategorií na celkovém hodnocení</h2>
+<p>Poznámka: V grafu jsou jednotlivé kategorie uváděny jako součet, nikoli jako aritmetický průměr.</p>
+
+{var ratingCategories = $round->getRatingCategories('firstRating')}
+{var ratings = $round->getProjectsRating('firstRating')}
+{? $projects = $projects->fetchAssoc('id')}
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+  google.load("visualization", "1", {l}packages:["corechart"]{r});
+  google.setOnLoadCallback(drawChart);
+  function drawChart() {
+    var data = new google.visualization.DataTable();
+	data.addColumn('string', 'Projekt');
+	{foreach $ratingCategories as $category}
+		data.addColumn('number', '{!$category->name}');
+	{/foreach}
+
+    data.addRows([
+	 {foreach $ratings as $id => $projectRating}		
+      ['{!= isset($projects[$id]->name) ? $projects[$id]->name : ''}', {foreach $projectRating as $rating}{!$rating->avgRating}{if !$iterator->isLast()}, {/if}{/foreach}]{if !$iterator->isLast()}, {/if}
+	 {/foreach}
+    ]);
+
+    var options = {
+	  isStacked: true,
+      title: 'Podíl kategorií na výsledném hodnocení',
+      /*vAxis: {l}title: 'Projekt',  titleTextStyle: {l}color: 'black'{r}{r}*/
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+  }
+</script>
+
+<div id="chart_div" style="height: 700px;"></div>
+
+
+
+{if $user->isAllowed('round', 'edit') AND $round->phase == 'preparation'}
 
 	<hr>
 	
