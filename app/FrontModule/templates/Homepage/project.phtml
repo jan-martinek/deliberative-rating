@@ -34,7 +34,7 @@
 		{if $ratingsValues}{? $form->setValues($ratingsValues)}{/if}
 		{if $eligibilityValues}
 			{? $form['notEligible']->setValue($eligibilityValues->notEligible)}
-			{? $form['notEligibleReasons']->setValue($eligibilityValues->reasons)}
+			{? $form['reasons']->setValue($eligibilityValues->reasons)}
 		{/if}
 		<table>
 
@@ -52,26 +52,54 @@
 		</tr>
 		</table>
 		<p>{$form['notEligible']->control} {$form['notEligible']->label}</p>
-		<p id="eligibility">{$form['notEligibleReasons']->label}<br>{$form['notEligibleReasons']->control} </p>
-		{$form['submit']->control}
+		<p id="eligibility">{$form['reasons']->label}<br>{$form['reasons']->control} </p>
+		<p>{$form['submit']->control}</p>
 	
 		{control rateProjectForm end}
 		</div>
 	{else}
 		<p>Právě probíhá fáze „{$round->getPhaseName()}“. Informace budou zveřejněny po skončení této fáze.</p>
-	{/if}	
+	{/if}
 {elseif $round->phase == 'deliberation'}
+	<h2>Výsledky prvního hodnocení</h2>
+	<p>Jednotlivá hodnocení jsou po prvním kole promíchána. Porotci si v diskusi mohou ponechat svá hodnocení
+		pro sebe anebo vyjít s vlastním hodnocením veřejně. Oba postupy mohou přinést pozitivní výsledky.
+		Po fázi druhého hodnocení budou konkrétní výsledky z obou kol přiřazeny k porotcům.</p>
 	<table>
 		<tr><th>Kategorie</th><th>Jednotlivá hodnocení</th><th>Průměr</th></tr>
+		{var count = 0}
+		{var total = 0}
 		{foreach $categories as $id => $category}
 			<tr>
 				<th>{$category->name}</th>
 				{? shuffle($ratings[$category->id])}
-				<td>{foreach $ratings[$category->id] as $rating}{$rating}{if !$iterator->isLast()}, {/if}{/foreach}</td>
+				<td>{foreach $ratings[$category->id] as $rating}<span class="ratingNum{$rating}">{$rating}</span>{if !$iterator->isLast()}, {/if}{/foreach}</td>
 				<td>{=array_sum($ratings[$category->id])/count($ratings[$category->id])}</td>
 			</tr>
+		{? $count++; $total += array_sum($ratings[$category->id])/count($ratings[$category->id])}	
 		{/foreach}
+		<tr><th colspan="2">Celkové hodnocení (průměr)</th><th>{=$total/$count}</th></tr>
 	</table>
+	
+	<h2>Doporučení k podpoře a komentáře komise</h2>
+	<p>Porotci hodnotí projekty podle několika kritérií a podle těchto hodnocení jsou projekty
+		řazeny při výběru těch, které budou podpořeny. Nicméně, pokud jim na projektu něco nesedí,
+		mohou projekt <strong>nedoporučit k podpoře</strong> – tím říkají, že je v návrhu projektu
+		něco zásadního špatně. Pokud projekt získá dvě a více <strong>nedoporučení</strong>, přesouvá
+		se automaticky „pod čáru“. V prvním kole má toto hodnocení orientační charakter (a hodnocení
+		jsou anonymní), ve druhém je rozhodující.</p>
+		
+	<table>
+		{dump $eligibility}
+		{foreach $eligibility as $el}
+			<tr><td>
+				{!= $el->notEligible == 0 ? 'doporučeno' : '<strong>nedoporučeno</strong>'}				
+			</td><td>
+				{!= trim($el->reasons) == '' ? 'bez komentáře' : nl2br($el->reasons)}				
+			</td></tr>
+		{/foreach}
+	</table>	
+		
 {elseif $round->phase == 'results'}
 	výsledky
 {/if}

@@ -37,26 +37,38 @@ class Front_HomepagePresenter extends FrontPresenter {
 		$this->redirect('this');		
 	}
 
-	public function createComponentSwitchPhaseForm() {
+	public function createComponentRoundDetailsForm() {
 		$form = new AppForm;
 
 		$round = new Round(array());
-		$form->addSelect('phase', 'Fáze', $round->getPhases());
+		$form->addSelect('phase', 'Fáze projektového kola', $round->getPhases());
+		$form->addText('amount', 'Rozdělovaná částka', 10, 10);
+		$form->addText('deliberationTimePlace', 'Čas a místo konání diskuse', 40, 60);
+		$form->addTextarea('deliberationMinutes', 'Zápis z diskuse');
 		$form->addHidden('id');
-		$form->addSubmit('submit', 'Přepnout fázi projektového kola');
+		$form->addSubmit('submit', 'Uložit podrobnosti projektového kola');
 		
-		$form->onSubmit[] = callback($this, 'switchPhaseFormSubmitted');
+		$form->onSubmit[] = callback($this, 'roundDetailsFormSubmitted');
 		return $form;		
 	}	
 	
-	public function switchPhaseFormSubmitted($form) {
+	public function roundDetailsFormSubmitted($form) {
 		$values = $form->getValues();
 		
 		$roundManager = new RoundManager;
 		$round = $roundManager->find($values['id']);
-		$round->setPhase($values['phase'], Environment::getUser()->getId());
 		
-		$this->flashMessage('Fáze projektového kola byla změněna.');
+		if ($values['phase'] != $round->phase) {
+			$round->setPhase($values['phase'], Environment::getUser()->getId());
+		}
+
+		$round->deliberationTimePlace = $values['deliberationTimePlace'];
+		$round->deliberationMinutes = $values['deliberationMinutes'];
+		$round->amount = $values['amount'];
+
+		$round->save();
+		
+		$this->flashMessage('Podrobnosti projektového kola byly uloženy.');
 		$this->redirect('this');		
 	}	
 	
@@ -178,9 +190,8 @@ class Front_HomepagePresenter extends FrontPresenter {
 			$form->addSelect($id, $category->name, $options)->setOption('description', $category->description);
 		}	
 		
-		$form->addCheckBox('notEligible', 'Projekt není vhodné podpořit')
-			->addCondition(Form::EQUAL, 1)->toggle('eligibility');		
-		$form->addTextArea('notEligibleReasons', 'Zdůvodnění nevhodnosti k podpoře', 20, 4);
+		$form->addCheckBox('notEligible', 'Projekt není vhodné podpořit');	
+		$form->addTextArea('reasons', 'Zdůvodnění hodnocení', 60, 15);
 		
 		$form->addSubmit('submit', 'Uložit hodnocení');
 		
@@ -201,7 +212,7 @@ class Front_HomepagePresenter extends FrontPresenter {
 		}
 		$this->project->rate($rating, $jurorID);
 		
-		$this->project->setEligibility($values['notEligible'], $values['notEligibleReasons'], $jurorID);		
+		$this->project->setEligibility($values['notEligible'], $values['reasons'], $jurorID);		
 		
 		$this->flashMessage('Hodnocení bylo uloženo.');
 		$this->redirect('this');		

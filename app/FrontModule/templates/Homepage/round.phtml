@@ -27,7 +27,8 @@
 	<p>Předseda komise právě plní systém žádostmi žadatelů. Zatím neprobíhá hlasování.</p>
 {/block}
 {block #firstRating}<p>Právě probíhá první hlasování podle následujících pravidel.</p>{include #firstRatingRules}{/block}
-{block #deliberation}<p>Hlasování skončilo, v nejbližších dnech by se mělo konat setkání se členy komise.
+{block #deliberation}<p>První hlasování skončilo, <strong>{$round->deliberationTimePlace} se koná setkání 
+	Komise se žadateli a celou akademickou obcí fakulty.</strong>
 	Hlasování proběhlo podle následujících pravidel:</p>{include #firstRatingRules}{/block}
 {block #secondRating}<p>Právě probíhá druhé hlasování podle následujících pravidel.</p>{include #secondRatingRules}{/block}
 {block #results}Druhé hlasování skončilo a níže vidíte konečné výsledky. 
@@ -40,7 +41,7 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 
 {if $round->phase == 'preparation'}{include #preparation}{/if}
 {if $round->phase == 'firstRating'}{include #firstRating}{/if}
-{if $round->phase == 'deliberation'}{include #deliberation}{/if}
+{if $round->phase == 'deliberation'}{include #deliberation, round => $round}{/if}
 {if $round->phase == 'secondRating'}{include #secondRating}{/if}
 {if $round->phase == 'results'}{include #results}{/if}
 
@@ -59,29 +60,35 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 		</tr>
 		
 		{var total = 0}
+		{var granted = 0}
 		{var depleted = FALSE}
 		{var ineligible = FALSE}
 		{foreach $projects as $project}
+			{? $total += $project->amount}
 			{if $round->phase == 'deliberation' OR $round->phase == 'results'}			
-				{? $total += $project->amount}
+				
 				{if ($round->phase == 'deliberation' AND $project->firstRatingIneligibilityBool) 
 					OR ($round->phase == 'results' AND $project->secondRatingIneligibilityBool)}
 					{var ineligible = TRUE}
 				{/if}
 				
 				{if !$depleted AND ($total >= $round->amount OR $ineligible)}
-					<tr><th colspan="4" style="border-top: 1px solid black; border-bottom: 1px solid black;">
-						{if $round->phase == 'deliberation'}Projekty pod touto hranicí by podle
-						výsledků prvního kola nebyly podpořeny.<br> Tento výsledek je zatím podkladem
+					<tr><td colspan="4" style="border-top: 1px solid black; border-bottom: 1px solid black;">
+						{if $round->phase == 'deliberation'}<strong>Projekty pod touto hranicí by podle
+						výsledků prvního kola nebyly podpořeny</strong> (kvůli nedostatku peněz
+						anebo kvůli tomu, že byly více než dvakrát komisaři označeny za nevhodné k podpoře).<br> 
+						Tento výsledek je podkladem
 						pro diskusi! Po diskusi následuje ještě závěrečné hodnocení, které má
-						stejnou váhu. Přijďte na setkání prodiskutovat hodnocení s porotci. {/if}
-						{if $round->phase == 'results'}Projekty pod touto hranicí nebudou podpořeny.<br>
+						stejnou váhu jako hodnocení první. Přijďte na setkání prodiskutovat hodnocení s porotci. {/if}
+						{if $round->phase == 'results'}<strong>Projekty pod touto hranicí nebudou podpořeny.</strong><br>
 						Zeptejte se porotců, jaký byl problém s Vaší žádostí. Pokud je toto váš
 						první pokus s touto žádostí, můžete to zkusit v příštím kole.{/if}
-					</th></tr>
+					</td></tr>
 					{var depleted = TRUE}
 				{/if}
 			{/if}
+			
+			{if !$depleted AND !$ineligible}{? $granted += $project->amount}{/if}
 		
 			<tr {if $iterator->isOdd()}class="odd"{/if}>
 				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a>
@@ -92,7 +99,8 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 					{if $round->phase == 'firstRating'}
 						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
 						{if $ratingCount}Již hodnotilo<br> {$ratingCount} z 5 porotců.{else}Zatím nehodnoceno.{/if}
-					{elseif $round->phase == 'deliberation'}
+					{elseif $round->phase == 'secondRating'}Hodnocení skryto.	
+					{elseif $round->phase == 'deliberation' OR $round->phase == 'results'}
 						{$project->firstRating}
 						
 						{if $project->firstRatingIneligibility > 0}
@@ -102,21 +110,36 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 					
 					
 				</td>
-				<td></td>
-				<td></td>
+				<td>	
+					{if $round->phase == 'secondRating'}
+						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
+						{if $ratingCount}Již hodnotilo<br> {$ratingCount} z 5 porotců.{else}Zatím nehodnoceno.{/if}
+					{elseif $round->phase == 'results'}
+						{$project->secondRating}
+
+						{if $project->secondRatingIneligibility > 0}
+							<span class="ineligible" title="Projekt byl {$project->secondRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->secondRatingIneligibility}!</span>
+						{/if}	
+					{/if}
+				</td>
+				<td>{if $round->phase == 'results'}<strong>{=round(100*$project->avgRating)/100}</strong>{/if}</td>
 			</tr>
 
 		
 			{* vloženo {$round->createdDATE|date: "%e. %B %Y"} *}
 	
 		{/foreach}
-		<tr><th colspan="4" style="border-top: 1px solid black;">Celková žádaná částka: {$total} Kč.<br>
-			Celkem rozdělováno v projektovém kole: {$round->amount} Kč.</th></tr>
+		<tr><th colspan="4" style="border-top: 1px solid black;">
+			Celková žádaná částka je {=number_format($total, 0, ',', ' ')} Kč.<br>
+			Celkem je rozdělováno v projektovém kole {=number_format($round->amount, 0, ',', ' ')} Kč.<br>
+			{if $round->phase == 'deliberation'}Celkem by podle prvního kola bylo rozděleno {=number_format($granted, 0, ',', ' ')} Kč{/if}
+			{if $round->phase == 'results'}Celkem bylo rozděleno {=number_format($granted, 0, ',', ' ')} Kč.{/if}
+			</th></tr>
 	</table>
 {/if}
 
 
-
+{if $round->phase == 'deliberation'}
 {* CHART IS NOT OPTIMIZED! *}
 
 <h2>Graf podílu jednotlivých kategorií na celkovém hodnocení</h2>
@@ -144,18 +167,19 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
     ]);
 
     var options = {
-	  isStacked: true,
-      title: 'Podíl kategorií na výsledném hodnocení',
+	  isStacked: true, 
+	chartArea: {l}top: '30', bottom: '20', height: '85%', width: '400'{r}
+      /*title: 'Podíl kategorií na výsledném hodnocení',*/
       /*vAxis: {l}title: 'Projekt',  titleTextStyle: {l}color: 'black'{r}{r}*/
     };
 
-    var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+    var chart = new google.visualization.BarChart(document.getElementById('chart_round'));
     chart.draw(data, options);
   }
 </script>
 
-<div id="chart_div" style="height: 700px;"></div>
-
+<div class="chart" id="chart_round" style="height: 500px;"></div>
+{/if}
 
 
 {if $user->isAllowed('round', 'edit') AND $round->phase == 'preparation'}

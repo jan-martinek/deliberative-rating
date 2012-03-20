@@ -6,21 +6,21 @@ class Round extends Record {
 		return 'rounds';
     }
 
-	public function setPhase($phase, $jurorID) {
+	public function setPhase($phase, $jurorID) {		
 		$jurorManager = new JurorManager;
 		$juror = $jurorManager->find($jurorID);
 		
-		if ($phase = 'deliberation') {
+		if ($phase == 'deliberation') {
 			$this->countProjectRatings('firstRating');
 			$this->countProjectsIneligibilityCounts('firstRating');
-		} elseif ($phase = 'results') {
+		} elseif ($phase == 'results') {
 			$this->countProjectRatings('secondRating');
 			$this->countProjectsIneligibilityCounts('secondRating');			
 		}
 
 		$this->phase = $phase;
 		$this->save();
-		
+
 		$logManager = new LogManager;
 		$logManager->log('Předseda ' . $juror->name . ' změnil fázi rozhodování na "' . $this->getPhaseName($phase) . '".');
 	}

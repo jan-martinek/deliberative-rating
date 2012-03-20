@@ -1,4 +1,4 @@
-@bg: rgb(207, 240, 240) + #111; /* rgb(233, 232, 201); */
+@bg: rgb(240, 240, 240) + #111; /* rgb(233, 232, 201); */
 @lightBg: @bg + #111;
 @blue: rgb(136, 202, 219);
 @red: #ee6166;
@@ -6,7 +6,7 @@
 @green: rgb(124, 172, 103);
 @orange: rgb(249, 180, 6);
 
-.titleFont { font-family: Impact, sans-serif; }
+.titleFont { font-family: Georgia, sans-serif; }
 
 .shadow (@radius: 8px, @alpha: 0.85) {
   -moz-box-shadow: 0px 0px @radius rgba(0, 0, 0, @alpha);
@@ -15,9 +15,15 @@
   box-shadow: 0px 0px @radius rgb(255*@alpha*3, 255*@alpha*3, 255*@alpha*3);
   box-shadow: 0px 0px @radius rgba(0, 0, 0, @alpha);  
 }
+.radius (@radius: 3px) {
+    -webkit-border-radius: @radius;
+    -moz-border-radius: @radius;
+    border-radius: @radius;
+}
 
 body {
 	text-align: center;
+	font-family: verdana, sans-serif;
 	font-size: 100%;
 	background: @bg; 
 }
@@ -28,7 +34,7 @@ h1, h2, h3, h4 {
 	font-weight: normal;
 	margin-bottom: 15px;
 }
-h2 { margin-top: 15px; font-size: 24px; }
+h2 { margin-top: 45px; font-size: 24px; }
 h3 { margin-top: 15px; font-size: 20px; margin-bottom: 10px }
 h4 { margin-top: 15px; font-size: 17px; margin-bottom: 8px; }
 h2#title {
@@ -45,8 +51,9 @@ ol li {
 	margin-bottom: 0;
 }
 table { width: 100%; }
-tr.odd { background: @bg - #111; }
+tr:nth-child(odd) { background: @bg - #111; }
 td, th { vertical-align: top; padding: 3px; }
+ 
 a {
     color: @brown - #444;
     
@@ -63,7 +70,7 @@ h1 a {
 }
 ul,ol { padding-left: 2em; list-style-type: circle; }
 li { font-size: 15px; line-height: 1.3*18px; margin-bottom: 18px; }
-a.buttonLink {
+/*a.buttonLink {
     background: @brown - #111;
     color: @bg; text-decoration: none;
     padding: 1em; margin: .5em 0;
@@ -73,7 +80,7 @@ a.buttonLink {
     &:hover {
 	background: @brown - #333;
     }
-}
+}*/
 
 #header {
 	padding: 1em 0;
@@ -113,9 +120,29 @@ a.buttonLink {
 	margin: 0;
 	float: right;
 	text-align: right;
+	font-size: 10pt;
 }
-
 form {
+	background: @bg - #222;
+	padding: 5px 20px;
+	.radius(10px);
+	
+	input, textarea {
+		font-family: verdana, sans-serif;
+		font-size: 12pt;
+	}
+
+}
+.chart {
+	border: 1px solid #ddd;
+}
+/*.ratingNum1, .ratingNum2, .ratingNum3, .ratingNum4, .ratingNum5 {
+	background: 0 5px no-repeat url('/images/chartgray.png');
+	color: #aaa;
+	padding: 0 3px;
+}*/
+
+/*form {
     overflow: hidden;
 
 	table { width: auto; }
@@ -160,9 +187,9 @@ form {
 	    }   
 	}
     }
-}
+}*/
 
-a.buttonLink, input.submit, input[type=submit] {
+/*a.buttonLink, input.submit, input[type=submit] {
     display: block;
     background: @brown - #111;
     color: @bg; text-decoration: none;
@@ -173,7 +200,7 @@ a.buttonLink, input.submit, input[type=submit] {
     &:hover {
 	background: @brown - #333;
     }
-}
+}*/
 #flashMessages {
     position: fixed;
     top: 0px;

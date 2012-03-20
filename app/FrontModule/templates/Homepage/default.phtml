@@ -13,11 +13,31 @@
 	{foreach $rounds as $round}
 		
 		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong><br> 
-			vloženo {$round->createdDATE|date: "%e. %B %Y"}
-			{var form = $control['switchPhaseForm']}
-			{? $form['phase']->setValue($round->phase)}
-			{? $form['id']->setValue($round->id)}
-			{control switchPhaseForm}
+			{if $round->amount}Rozděluje se {=number_format($round->amount, 0, ',', ' ')} Kč{if trim($round->deliberationTimePlace)},
+			setkání k deliberaci se koná {= trim($round->deliberationTimePlace)}{/if}.{/if}</p>
+
+
+			{if trim($round->deliberationMinutes)}<p><strong>Zápis z deliberace:</strong><br>
+				{=nl2br(trim($round->deliberationMinutes))}</p>{/if}
+			<p><small>Vloženo {$round->createdDATE|date: "%e. %B %Y"}</small></p>
+		
+			{if $user->isAllowed('round', 'edit')}	
+				{var form = $control['roundDetailsForm']}
+				{control roundDetailsForm begin}
+				{control roundDetailsForm errors}
+				{? $form->setValues($round)}
+
+				<p>{$form['amount']->label}:<br> {$form['amount']->control} Kč</p>
+				<p>{$form['phase']->label}:<br> {$form['phase']->control}</p>
+				<p>{$form['deliberationTimePlace']->label} <em>(pište podle vzoru „v pátek 13. června ve Spolkovně na FSS“)</em>:<br> {$form['deliberationTimePlace']->control}
+					</p>
+				
+				<p>{$form['deliberationMinutes']->label}:<br>
+				{$form['deliberationMinutes']->control}</p>
+				
+				{$form['submit']->control}</p>
+				{control roundDetailsForm end}
+			{/if}
 		</li>
 	{/foreach}
 	</ul>
