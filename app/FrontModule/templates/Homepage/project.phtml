@@ -71,7 +71,7 @@
 		{var total = 0}
 		{foreach $categories as $id => $category}
 			<tr>
-				<th>{$category->name}</th>
+				<th title="{$category->description}">{$category->name}</th>
 				{? shuffle($ratings[$category->id])}
 				<td>{foreach $ratings[$category->id] as $rating}<span class="ratingNum{$rating}">{$rating}</span>{if !$iterator->isLast()}, {/if}{/foreach}</td>
 				<td>{=array_sum($ratings[$category->id])/count($ratings[$category->id])}</td>
@@ -101,5 +101,72 @@
 	</table>	
 		
 {elseif $round->phase == 'results'}
-	výsledky
+	<h2>Konečné výsledky z obou hodnocení</h2>
+
+	{dump $jurors}
+	<table>
+		<tr>
+			<th>Kategorie</th>
+			{foreach $jurors as $juror}<th>{$juror->name}</th>{/foreach}
+			<th>Průměry</th>
+			<th>Výsledek</th>			
+		</tr>
+		{var count = array('firstRating' => 0, 'secondRating' => 0)}
+		{var total = array('firstRating' => 0, 'secondRating' => 0)}
+		{foreach $categories as $id => $category}
+			<tr>
+				<th title="{$category->description}">{$category->name}</th>
+				
+				{if !isset($firstRatings[$category->id])}
+					<td colspan="{=count($jurors)+2}">V této kategorii nikdo nehodnotil v prvním hodnocení.</td>
+					{? continue; }
+				{/if}
+				{if !isset($secondRatings[$category->id])}
+					<td colspan="{=count($jurors)+2}">V této kategorii nikdo nehodnotil ve druhém hodnocení.</td>
+					{? continue; }
+				{/if}
+				
+				{foreach $jurors as $juror}
+					
+					{var firstRating = isset($firstRatings[$category->id][$juror->id]) ?
+						$firstRatings[$category->id][$juror->id] : '—' }
+					{var secondRating = isset($secondRatings[$category->id][$juror->id]) ?
+						$secondRatings[$category->id][$juror->id] : '—' }	
+					<td>						
+						<span class="ratingNum{$firstRating}">{$firstRating}</span> |
+						<span class="ratingNum{$secondRating}">{$secondRating}</span>
+					</td>
+				
+				{/foreach}
+				<td>
+					{=array_sum($firstRatings[$category->id])/count($firstRatings[$category->id])} | 
+					{=array_sum($secondRatings[$category->id])/count($secondRatings[$category->id])}					
+				</td>
+				<td>
+					<strong>{=(array_sum($firstRatings[$category->id])/count($firstRatings[$category->id])
+						+ array_sum($secondRatings[$category->id])/count($secondRatings[$category->id]))/2}</strong>
+				</td>
+			</tr>
+		{? 	$count['firstRating']++;  
+			$total['firstRating'] += array_sum($firstRatings[$category->id])/count($firstRatings[$category->id]);
+		}
+
+		{?	$count['secondRating']++;
+			$total['secondRating'] += array_sum($secondRatings[$category->id])/count($secondRatings[$category->id]);
+		}	
+		{/foreach}
+		<tr><th colspan="{=count($jurors)+1}">Celkové hodnocení (průměr)</th>
+		{if $count['firstRating'] == 0 OR $count['secondRating'] == 0}
+			<th>&ndash;</th><th>&ndash;</th>
+		{else}	
+			<th>
+				{=$total['firstRating']/$count['firstRating']} | {=$total['secondRating']/$count['secondRating']}
+			</th>
+			<th>
+				{=($total['firstRating']/$count['firstRating'] + $total['secondRating']/$count['secondRating'])/2}
+			</th>
+		{/if}
+		</tr>
+	</table>	
+	
 {/if}

@@ -76,9 +76,18 @@ class Round extends Record {
 	public function getProjectsRatingCounts($phase) {
 		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'eligibilities.projectID');
 		
-		return dibi::query('SELECT projects.id AS id, count(*) AS count 
-			FROM eligibilities, projects where %and', $where, 
+		return dibi::query('SELECT projects.id AS id, count(*) AS count
+			FROM eligibilities, projects where %and', $where,
 			'GROUP BY projects.id')->fetchPairs('id', 'count');
+	}
+	
+	public function getJurorsWhoRatedThisRound() {
+		$where = array('roundID%i' => $this->id, 
+			'projects.id%n' => 'eligibilities.projectID', 
+			'eligibilities.jurorID%n' => 'jurors.id');
+		
+		return dibi::query('SELECT jurors.* FROM jurors, projects, eligibilities
+			WHERE %and', $where, 'GROUP BY jurors.id')->fetchAssoc('id');
 	}
 	
 	public function getPhaseName($phase = NULL) {

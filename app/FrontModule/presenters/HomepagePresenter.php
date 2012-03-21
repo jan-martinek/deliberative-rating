@@ -14,6 +14,9 @@ class Front_HomepagePresenter extends FrontPresenter {
     public function actionDefault() {
 		$roundManager = new RoundManager;
 		$this->template->rounds = $roundManager->findAll(array('id' => 'DESC'));
+		
+		$jurorManager = new JurorManager;
+		$this->template->jurors = $jurorManager->findAll(array('role' => 'ASC', 'name' => 'ASC'));		
 	}
 	
 	public function createComponentEditRoundForm() {
@@ -43,7 +46,7 @@ class Front_HomepagePresenter extends FrontPresenter {
 		$round = new Round(array());
 		$form->addSelect('phase', 'Fáze projektového kola', $round->getPhases());
 		$form->addText('amount', 'Rozdělovaná částka', 10, 10);
-		$form->addText('deliberationTimePlace', 'Čas a místo konání diskuse', 40, 60);
+		$form->addText('deliberationTimePlace', 'Čas a místo konání diskuse', 80, 80);
 		$form->addTextarea('deliberationMinutes', 'Zápis z diskuse');
 		$form->addHidden('id');
 		$form->addSubmit('submit', 'Uložit podrobnosti projektového kola');
@@ -168,8 +171,13 @@ class Front_HomepagePresenter extends FrontPresenter {
 				break;
 				
 			case 'results':
+				$this->template->firstRatings = $this->project->getRatingsByCategory('firstRating');
+				$this->template->secondRatings = $this->project->getRatingsByCategory('secondRating');
+				$this->template->firstEligibility = $this->project->getEligibility('firstRating');
+				$this->template->secondEligibility = $this->project->getEligibility('secondRating');				
+				$this->template->categories = $this->round->getRatingCategories();	
+				$this->template->jurors = $this->round->getJurorsWhoRatedThisRound();		
 				break;
-	
 		}
 	}
 	

@@ -12,14 +12,17 @@
 	<ul>
 	{foreach $rounds as $round}
 		
-		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong><br> 
-			{if $round->amount}Rozděluje se {=number_format($round->amount, 0, ',', ' ')} Kč{if trim($round->deliberationTimePlace)},
-			setkání k deliberaci se koná {= trim($round->deliberationTimePlace)}{/if}.{/if}</p>
+		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong>
+			<ul class="details">
+				<li>Kolo je ve fázi <strong>{$round->getPhaseName()}</strong>.</li>
+				{if $round->amount}<li>Rozděluje se {=number_format($round->amount, 0, ',', ' ')} Kč</li>{/if}
+				{if trim($round->deliberationTimePlace)}<li>Setkání k deliberaci se koná {= trim($round->deliberationTimePlace)}.</li>{/if}
+			
 
-
-			{if trim($round->deliberationMinutes)}<p><strong>Zápis z deliberace:</strong><br>
-				{=nl2br(trim($round->deliberationMinutes))}</p>{/if}
-			<p><small>Vloženo {$round->createdDATE|date: "%e. %B %Y"}</small></p>
+			{if trim($round->deliberationMinutes)}<li><strong>Zápis z deliberace:</strong><br>
+				{=nl2br(trim($round->deliberationMinutes))}</li>
+			{/if}
+			</ul>
 		
 			{if $user->isAllowed('round', 'edit')}	
 				{var form = $control['roundDetailsForm']}
@@ -52,3 +55,33 @@
 	<h2>Vložit nové projektové kolo</h2>
 	{control editRoundForm}
 {/if}
+
+<h1>Princip fungování deliberativní komise</h1>
+<table class="basics">
+	<tr class="headline"><th>1. hodnocení</th><td> ⇒ </td><th class="deliberation">diskuse</th><td> ⇒ </td><th>2. hodnocení</th><tr>
+	<tr>
+		<td>Po uzávěrce komise ohodnotí všechny projekty podle několika zvolených 
+			kritérií – toto hodnocení ale není definitivní. Díky prvnímu hodnocení získají 
+			všichni představu, jak vypadá situace.</td>
+		<td></td>
+		<td>Předseda komise svolá setkání všech zájemců z fakulty (z řad žadatelů i jiných)
+			s komisí k diskusi (<em>deliberaci</em>) o prvních výsledcích. 
+			Komise i žadatelé tak získávají zpětnou vazbu a mohou se vyjadřovat ke
+			způsobu hodnocení a používaným kritériím.</td>
+		<td></td>
+		<td>Po diskusi komise ohodnotí žádosti ještě jednou. Výsledné hodnocení
+			bere ohled na obě kola hodnocení. První kolo zdůrazňuje váhu názorů individuálních
+			hodnotících, druhé kolo je ovlivněno diskusí a časovým odstupem.</td>		
+	</tr>
+</table>
+
+<h1>Členové komise</h1>
+<ul>
+{foreach $jurors as $juror}
+	<li><strong>{$juror->name}</strong><em> &mdash; {$juror->getRoleText()}</em><br>
+		e-mail: <a href="mailto:{$juror->email}">{$juror->email}</a> |
+		<a href="http://is.muni.cz/auth/lide/{$juror->number}">profil v ISu</a>
+	</li>
+{/foreach}
+</ul>
+

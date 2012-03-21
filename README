@@ -1,9 +1,33 @@
-Deliberativní systém hodnocení projektů
+## Deliberativní systém hodnocení projektů
+––––––––––––––––––––––––––––––––––––––––––
+Projekt ještě prochází turbulentním vývojem, jeho aktuální funkční instanci můžete vidět na stipendia.servismag.cz.
 
-(Prozatím z velké části nehotové a nefunkční, ani se to nepokoušejte stahovat.)
 
-Závislosti:
+## Roadmap
+––––––––––
+1.0: funkční systém pro potřeby Stipendijní komise FSS
+     - práce s kritérii hodnocení, dokončení vytváření kol hodnocení
+     - integrovaný manuál / first steps
+     - odladění používaných termínů
+     - integrace pravidel
+     - práce s porotci
+     - zobrazení konečného hodnocení
+     - doplnění logování důležitých věcí
+    
+2.0: nastavení a modularizace prvků, které variují 
+     - speciální třída, kde je možné dodefinovat některé podstatné detaily
+     - způsob ukládání žádostí
+     - počet hodnotitelů
+     - generování odkazů na žadatele (identifikátory lidí)
+    
+3.0: internacionalizace
+     - překlad do AJ
+     - skloňování, kde je potřeba
+     - přepis informací o projektu do angličtiny
 
+    
+## Závislosti:
+––––––––––––––
 – Nette 2.0 dev pro PHP 5.2 (přepis pro aktuální Nette a PHP 5.3 v plánu)
 – dibi
 – texy 2

@@ -6,7 +6,7 @@
 @green: rgb(124, 172, 103);
 @orange: rgb(249, 180, 6);
 
-.titleFont { font-family: Georgia, sans-serif; }
+.titleFont { font-family: Georgia, sans-serif; font-weight: normal; }
 
 .shadow (@radius: 8px, @alpha: 0.85) {
   -moz-box-shadow: 0px 0px @radius rgba(0, 0, 0, @alpha);
@@ -30,8 +30,6 @@ body {
 h1, h2, h3, h4 {
 	.titleFont;
  	font-size: 36px;
-	font-style: normal;
-	font-weight: normal;
 	margin-bottom: 15px;
 }
 h2 { margin-top: 45px; font-size: 24px; }
@@ -52,8 +50,20 @@ ol li {
 }
 table { width: 100%; }
 tr:nth-child(odd) { background: @bg - #111; }
+form tr:nth-child(odd) { background: transparent; }
 td, th { vertical-align: top; padding: 3px; }
- 
+table.basics {
+	tr.headline td { text-align: center; vertical-align: middle; font-size: 24pt; }
+	tr, td { background: transparent; }
+	th { background: #f60; text-align: center; width: 30%; color: white; 
+		.titleFont; font-size: 24pt; line-height: 30pt; padding: 5px; }
+	th.deliberation { background: #0a2 }
+}
+ul.details {
+	li {
+		margin: .5em 0;
+	}
+}
 a {
     color: @brown - #444;
     
