@@ -12,14 +12,19 @@
 {/block}
 
 {block #secondRatingRules}
-<ol><li>Ve druhé fázi hodnocení Komise rozhodne o konečném pořadí žádostí.
-</li><li>Rozhodnutí musí být provedeno s přihlédnutím k první fázi hodnocení a výsledkům veřejného zasedání.
+<ol>
+<li>Ve druhé fázi hodnocení Komise podruhé hodnotí žádosti s přihlédnutím na průběh diskuse.
+</li><li>Ve druhé fázi platí stejná pravidla hodnocení jako v první fázi (dle §8, odst. 2–5).
+</li><li>Pokud žádost získá alespoň od dvou komisařů ve druhé fázi hodnocení “nevhodné k podpoře”, nebude podpořena.
+</li><li>Konečné pořadí žádostí je stanoveno podle průměrného hodnocení z obou kol hodnocení.
 </li><li>Výsledkem práce Komise je řazený Seznam žádostí (dále jen Seznam), které mají být v tomto pořadí podpořeny. Seznam je řazen sestupně.
-</li><li>Žádosti, které dle názoru Komise nejsou vhodné k podpoře, jsou v Seznamu označeny “nevhodné k podpoře”.
-</li><li>Podporu získává každá žádost v Seznamu, dokud nejsou vyčerpány přidělené prostředky na dané stipendijní kolo. Prostředky nemůže získat žádost, která je označena jako “nevhodná k podpoře”.
+</li><li>Žádosti, které byly vyřazeny pro nesplnění formálních požadavků jsou takto v Seznamu označeny.
+</li><li>Žádosti, které dle názoru Komise nejsou vhodné k podpoře, jsou v Seznamu	označeny “nevhodné k podpoře”.
+</li><li>Pokud je žádost neúspěšná, může žadatel znovu zažádat maximálně jednou. V případě, že žádost bude Komisí znovu zamítnuta, nelze již na stejný projekt žádost podat.
+</li><li>Podporu získává každá žádost v Seznamu, dokud nejsou vyčerpány přidělené	prostředky na dané stipendijní kolo. Prostředky nemůže získat žádost, která je 	označena jako “nevhodná k podpoře”.
 </li><li>Předseda komise předá Seznam do tří dnů zástupcům SK.
-</li><li>Studentská komora předá Seznam pověřenému proděkanovi do pěti pracovních dnů poté, co jej obdrží od předsedy Komise. Proděkan na základě tohoto Seznamu rozhodne o udělení stipendií. 
-</li><li>Předseda zveřejní Seznam do tří pracovních dnů poté, co je ukončena druhá fáze hodnocení.</li></ol>
+</li><li>Studentská komora předá Seznam pověřenému proděkanovi do pěti dnů poté, co jej obdrží od předsedy Komise. Proděkan na základě tohoto Seznamu rozhodne o udělení stipendií.	</li>
+</ol>
 {/block}
 
 
@@ -61,18 +66,21 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 		
 		{var total = 0}
 		{var granted = 0}
-		{var depleted = FALSE}
-		{var ineligible = FALSE}
-		{foreach $projects as $project}
-			{? $total += $project->amount}
+
+		{foreach $projects as $project}	
 			{if $round->phase == 'deliberation' OR $round->phase == 'results'}			
+				{var ineligible = FALSE}
+				{var noResources = FALSE}
 				
 				{if ($round->phase == 'deliberation' AND $project->firstRatingIneligibilityBool) 
 					OR ($round->phase == 'results' AND $project->secondRatingIneligibilityBool)}
 					{var ineligible = TRUE}
 				{/if}
+				{if $granted + $project->amount > $round->amount}
+					{var noResources = TRUE}
+				{/if}
 				
-				{if !$depleted AND ($total >= $round->amount OR $ineligible)}
+				{*if !$depleted AND ($total + $project->negotiatedAmount >= $round->amount OR $ineligible)}
 					<tr><td colspan="4" style="border-top: 1px solid black; border-bottom: 1px solid black;">
 						{if $round->phase == 'deliberation'}<strong>Projekty pod touto hranicí by podle
 						výsledků prvního kola nebyly podpořeny</strong> (kvůli nedostatku peněz
@@ -85,44 +93,74 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 						první pokus s touto žádostí, můžete to zkusit v příštím kole.{/if}
 					</td></tr>
 					{var depleted = TRUE}
-				{/if}
+				{/if*}
+				
+				
+				{if !$noResources AND !$ineligible}{? $granted += $project->negotiatedAmount}{/if}
 			{/if}
+			{? $total += $project->negotiatedAmount}
 			
-			{if !$depleted AND !$ineligible}{? $granted += $project->amount}{/if}
 		
 			<tr {if $iterator->isOdd()}class="odd"{/if}>
 				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a>
-					<br>{$project->applicant} &bull; {$project->amount} Kč</td>
+					<br>{$project->applicant} &bull; {$project->negotiatedAmount}&nbsp;Kč
+					{if $project->amount != $project->negotiatedAmount}(sníženo z {$project->amount}&nbsp;Kč){/if}</td>
 					
 					
 				<td>
 					{if $round->phase == 'firstRating'}
 						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
-						{if $ratingCount}Již hodnotilo<br> {$ratingCount} z 5 porotců.{else}Zatím nehodnoceno.{/if}
+						{if $ratingCount}Již hodnotilo<br> {=number_format($ratingCount, 0)} z 5
+						porotců{if isset($myRating[$project->id])}<br><span class="flag granted">včetně mě</a>{/if}.
+						{else}Zatím nehodnoceno.{/if}
 					{elseif $round->phase == 'secondRating'}Hodnocení skryto.	
 					{elseif $round->phase == 'deliberation' OR $round->phase == 'results'}
-						{$project->firstRating}
+						{=number_format($project->firstRating, 3, ',', ' ')}
 						
 						{if $project->firstRatingIneligibility > 0}
-							<span class="ineligible" title="Projekt byl {$project->firstRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->firstRatingIneligibility}!</span>
+							<span class="flag ineligible" title="Projekt byl {$project->firstRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->firstRatingIneligibility}!</span>
+						{/if}
+						
+						{if $round->phase == 'deliberation'}
+							{if !$noResources AND !$ineligible}
+								<span class="flagBox granted"><strong>Předběžně</strong> vyjádřena podpora
+										</span>
+							{elseif $ineligible}
+								<span class="flagBox ineligible"><strong>Předběžně</strong> vyjádřeno nedoporučení</span>
+							{else}
+								<span class="flagBox noResources"><strong>Předběžně</strong> nemožné podpořit pro nedostatek peněz</span>
+							{/if}
 						{/if}
 					{/if}
 					
 					
 				</td>
+				
 				<td>	
-					{if $round->phase == 'secondRating'}
+					{if $round->phase == 'secondRating'}							
 						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
-						{if $ratingCount}Již hodnotilo<br> {$ratingCount} z 5 porotců.{else}Zatím nehodnoceno.{/if}
+						{if $ratingCount}Již hodnotilo<br> {=number_format($ratingCount, 0)} z 5 
+						porotců{if isset($myRating[$project->id])}<br><span class="flag granted">včetně mě</a>{/if}.
+						{else}Zatím nehodnoceno.{/if}
 					{elseif $round->phase == 'results'}
-						{$project->secondRating}
+						{=number_format($project->secondRating, 3, ',', ' ')}
 
 						{if $project->secondRatingIneligibility > 0}
-							<span class="ineligible" title="Projekt byl {$project->secondRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->secondRatingIneligibility}!</span>
+							<span class="flag ineligible" title="Projekt byl {$project->secondRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->secondRatingIneligibility}!</span>
 						{/if}	
 					{/if}
 				</td>
-				<td>{if $round->phase == 'results'}<strong>{=round(100*$project->avgRating)/100}</strong>{/if}</td>
+				<td>{if $round->phase == 'results'}
+						<strong>{=number_format($project->avgRating, 3, ',', ' ')}</strong><br>
+						{if !$noResources AND !$ineligible}
+							<span class="flagBox granted">Podpořeno
+									</span>
+						{elseif $ineligible}
+							<span class="flagBox ineligible">Nedoporučeno</span>
+						{else}
+							<span class="flagBox noResources">Nepodpořeno <br>pro vyčerpání peněz</span>
+						{/if}
+					{/if}</td>
 			</tr>
 
 		

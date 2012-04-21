@@ -51,7 +51,8 @@ class Project extends Record {
 
 		$where = array(
 			'projectID%i' => $this->id,
-			'phase%s' => $phase
+			'phase%s' => $phase,
+			array('rating > %i', 0)
 		);
 		if ($jurorID) {
 			$where['jurorID%i'] = $jurorID;
@@ -88,6 +89,15 @@ class Project extends Record {
 		return $this->getRatings($phase, NULL, 'juror');
 	}
 	
+	public function getJurorsWhoRatedThisProject($phase = NULL) {
+		$where = array('projectID%i' => $this->id, 
+			'eligibilities.jurorID%n' => 'jurors.id');
+		if ($phase) $where['phase'] = $phase;
+		
+		return dibi::query('SELECT jurors.* FROM jurors, eligibilities
+			WHERE %and', $where, 'GROUP BY jurors.id')->fetchAssoc('id');
+	}	
+	
 	public function getEligibility($phase, $jurorID = NULL) {
 		$where = array(
 			'projectID%i' => $this->id,
@@ -100,6 +110,6 @@ class Project extends Record {
 		$result = dibi::query('SELECT * FROM eligibilities WHERE %and', $where);
 		
 		if ($jurorID) return $result->fetch();
-		else return $result->fetchAll();
+		else return $result->fetchAssoc('jurorID');
 	}	
 }

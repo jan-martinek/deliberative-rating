@@ -35,8 +35,15 @@ class Round extends Record {
  		return $ratingCategoryManager->findByRound($this->id);
 	}
 	
-	public function getProjectsRating($phase) {
-		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'ratings.projectID');
+	public function getProjectsRating($phase, $jurorID = NULL) {
+		$where = array(
+			'phase%s' => $phase, 
+			'roundID%i' => $this->id, 
+			'projects.id%n' => 'ratings.projectID'
+		);
+		
+		if ($jurorID) $where['jurorID%i'] = $jurorID;
+		
 		return dibi::query('SELECT projects.id as projectID, ratingCategoryID, count(*) as count, avg(rating) as avgRating 
 			FROM projects, ratings WHERE %and', $where, 
 			'GROUP BY projects.id, ratings.ratingCategoryID')->fetchAssoc('projectID,ratingCategoryID');
@@ -74,17 +81,23 @@ class Round extends Record {
 	}
 	
 	public function getProjectsRatingCounts($phase) {
-		$where = array('phase%s' => $phase, 'roundID%i' => $this->id, 'projects.id%n' => 'eligibilities.projectID');
+		$categoriesCount = count($this->getRatingCategories());
 		
-		return dibi::query('SELECT projects.id AS id, count(*) AS count
-			FROM eligibilities, projects where %and', $where,
+		$where = array(
+			'phase%s' => $phase, 
+			'roundID%i' => $this->id, 
+			'projects.id%n' => 'ratings.projectID');
+		
+		return dibi::query('SELECT projects.id AS id, count(*)/'.$categoriesCount.' AS count
+			FROM ratings, projects where %and', $where,
 			'GROUP BY projects.id')->fetchPairs('id', 'count');
 	}
 	
-	public function getJurorsWhoRatedThisRound() {
+	public function getJurorsWhoRatedThisRound($phase = NULL) {
 		$where = array('roundID%i' => $this->id, 
 			'projects.id%n' => 'eligibilities.projectID', 
 			'eligibilities.jurorID%n' => 'jurors.id');
+		if ($phase) $where['phase'] = $phase;
 		
 		return dibi::query('SELECT jurors.* FROM jurors, projects, eligibilities
 			WHERE %and', $where, 'GROUP BY jurors.id')->fetchAssoc('id');

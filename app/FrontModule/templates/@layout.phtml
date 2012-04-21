@@ -8,7 +8,7 @@
 	<meta name="author" content="Jan Martinek - info@jan-martinek.com">
 	<meta name="robots" content="index, follow">
 
-	<title>{include #title} | Deliberativní hodnocení stipendijních projektů</title>
+	<title>{include #title} | Stipendijní komise FSS MU</title>
 
 	<link rel="shortcut icon" href="{$baseUri}favicon.png" type="image/png">
 	<link rel="stylesheet" media="screen,projection,tv" href="{$baseUri}css/screen.css?v=2" type="text/css">
@@ -26,21 +26,25 @@
 	</div>
 	<div id="header">
 	    <div class="wrapper">
-			<div id="userBox">
-			    {if Environment::getUser()->isLoggedIn()}
-				{? $identity = new Juror(Environment::getUser()->getIdentity()->getData()); }
-				<p>{$identity->name} &bull; <a href="{link Login:logout}">Odhlásit se</a></p>
-			    {else}
-				<p><a href="{link Login:default}">Přihlásit se</a></p>
-			    {/if}
-			</div>
 		    
-			<h2 id="title"><a href="/">Deliberativní hodnocení stipendijních projektů</a></h2>    
+			<h2 id="title"><a href="/">Stipendijní komise FSS MU</a></h2>    
 		</div>
 	</div> <!-- header -->	
 		
 	<div class="wrapper">	
 		{include #content}
+	</div>
+	
+	<div style="margin-top: 50px; padding-bottom: 20px; border-top: 1px solid #aaa" class="wrapper">
+		
+		<div id="userBox">
+		    {if Environment::getUser()->isLoggedIn()}
+			{? $identity = new Juror(Environment::getUser()->getIdentity()->getData()); }
+			<p>{$identity->name} &bull; <a href="{link Login:logout}">Odhlásit se</a></p>
+		    {else}
+			<p><a href="{link Login:default}">Přihlásit se (pouze pro členy komise)</a></p>
+		    {/if}
+		</div>
 	</div>
     </body>
 </html>

@@ -104,6 +104,10 @@ class Front_HomepagePresenter extends FrontPresenter {
 			case 'firstRating':
 			case 'secondRating':
 				$this->template->ratingCounts = $this->round->getProjectsRatingCounts($this->round->phase);
+
+				if (Environment::getUser()->isAllowed('project', 'rate')) {
+					$this->template->myRating = $this->round->getProjectsRating($this->round->phase, Environment::getUser()->getId());
+				}
 				break;
 
 		}
@@ -125,9 +129,11 @@ class Front_HomepagePresenter extends FrontPresenter {
 
 		$form->addText('name', 'Název projektu');
 		$form->addText('applicant', 'Žadatel');
+		$form->addText('amount', 'Částka');
 		$form->addText('applicationLink', 'Odkaz na žádost (PDF)');
 		$form->addTextArea('otherLinks', 'Odkazy na další dokumenty (PDF)')
 			->setOption('description', 'Vkládejte každý odkaz na samostatný řádek.');
+		$form->addHidden('id');
 		$form->addSubmit('submit', 'Uložit projekt');
 		
 		$form->onSubmit[] = callback($this, 'editProjectFormSubmitted');
@@ -137,11 +143,26 @@ class Front_HomepagePresenter extends FrontPresenter {
 	public function editProjectFormSubmitted($form) {
 		$values = $form->getValues();
 		
-		$project = new Project($values);
-		$project->roundID = $this->roundID;
+		if ($values['id']) {
+			$projectManager = new ProjectManager;
+			$project = $projectManager->find($values['id']);
+			
+			$project->name = $values['name'];
+			$project->applicant = $values['applicant'];
+			$project->amount = $values['amount'];
+			$project->negotiatedAmount = $values['amount'];
+			$project->applicationLink = $values['applicationLink'];
+			$project->otherLinks = $values['otherLinks'];
+			
+			$project->save();			
+		} else {		
+			$project = new Project($values);
+			$project->negotiatedAmount = $values['amount'];
+			$project->roundID = $this->roundID;
 		
-		$projectManager = new ProjectManager;
-		$projectManager->create($project);
+			$projectManager = new ProjectManager;
+			$projectManager->create($project);
+		}
 		
 		//usable only if files could be stored locally
 		//$id = dibi::insertId();
@@ -149,7 +170,35 @@ class Front_HomepagePresenter extends FrontPresenter {
 		
 		$this->flashMessage('Projekt byl uložen.');
 		$this->redirect('this');		
+	}
+	
+	public function createComponentEditNegotiatedProjectAmountForm() {
+		$form = new AppForm;
+
+		$form->addText('negotiatedAmount', 'Dohodnutá částka');
+		$form->addHidden('id');
+		$form->addSubmit('submit', 'Uložit dojednanou částku');
+		
+		$form->onSubmit[] = callback($this, 'editNegotiatedProjectAmountFormSubmitted');
+		return $form;		
+	}		
+	
+	public function editNegotiatedProjectAmountFormSubmitted($form) {
+		$values = $form->getValues();
+		
+		$projectManager = new ProjectManager;
+		$project = $projectManager->find($values['id']);			
+		
+		if ($values['negotiatedAmount'] > $project->amount) {
+			$this->flashMessage('Dojednaná částka nemůže bý vyšší než původní.', 'error');
+		} else {
+			$project->negotiatedAmount = $values['negotiatedAmount'];			
+			$project->save();			
+			$this->flashMessage('Dojednaná výše požadované částky byla uložena.');
+		}
+		$this->redirect('this');		
 	}	
+	
 	
 	public function actionProject($id) {
 		$projectManager = new ProjectManager;
@@ -164,6 +213,14 @@ class Front_HomepagePresenter extends FrontPresenter {
 	
 	public function renderProject() {				
 		switch ($this->round->phase) {
+			case 'firstRating':
+				$this->template->jurors = $this->project->getJurorsWhoRatedThisProject('firstRating');
+				break;
+				
+			case 'secondRating':				
+				$this->template->jurors = $this->project->getJurorsWhoRatedThisProject('secondRating');
+				break;
+			
 			case 'deliberation':
 				$this->template->ratings = $this->project->getRatingsByCategory('firstRating');
 				$this->template->eligibility = $this->project->getEligibility('firstRating');

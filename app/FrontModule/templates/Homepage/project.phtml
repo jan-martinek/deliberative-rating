@@ -1,5 +1,20 @@
 {block #title}Projekt – {$project->name}{/block}
 
+{block #eligibility}
+
+{if isset($eligibility[$juror->id])}
+	{var el = $eligibility[$juror->id]}
+	<td>
+		{!= $el->notEligible == 0 ? '<span class="flag granted">doporučeno</span>' : '<span class="flag ineligible">nedoporučeno</span>'}				
+		<hr>
+		{!= trim($el->reasons) == '' ? 'bez komentáře' : nl2br($el->reasons)}				
+	</td>
+{else}
+	<td colspan="2">Porotce nehodnotil</td>
+{/if}
+
+{/block}
+
 
 {block #content}
 <h1>{include #title}</h1>
@@ -16,9 +31,45 @@
 </p>
 
 <iframe src="{=trim($project->applicationLink)}" style="width: 760px; height: 500px"></iframe>
+<p style="text-align: right; font-size: 8pt; margin-top: 0;"><a href="{=trim($project->applicationLink)}" target="_blank">otevřít žádost v novém okně</a></p>
+
+{if $project->amount != $project->negotiatedAmount}
+	<p>Výše požadované částky byla snížena na {=number_format($project->negotiatedAmount, 0, ',', ' ')} Kč
+	(původně {=number_format($project->amount, 0, ',', ' ')} Kč).</p>
+{else}
+	{*<p>Požadovaná částka je {=number_format($project->amount, 0, ',', ' ')} Kč.*}
+{/if}
+{if $round->phase == 'deliberation' AND $user->isAllowed('round', 'edit')}
+ 	<h2>Změnit dohodnutou částku</h2>
+	{var form = $control['editNegotiatedProjectAmountForm']}
+	{? $form['id']->setValue($project->id)}
+	{? $form['negotiatedAmount']->setValue($project->negotiatedAmount)}
+	{control editNegotiatedProjectAmountForm}
+{/if}
 
 
-{if $round->phase == 'firstRating' OR $round->phase == 'secondRating'}	
+{if $round->phase == 'preparation' AND $user->isAllowed('round', 'edit')}
+	<h2>Upravit projekt</h2>
+	{var form => $control['editProjectForm']}
+	{? $form->setValues($project)}
+	{$form}
+		
+{elseif $round->phase == 'firstRating' OR $round->phase == 'secondRating'}	
+	{if $user->isAllowed('round', 'edit')}
+		<h2>Stav hlasování</h2>
+		 
+		{if count($jurors)}
+			<p>Již hlasovali:
+			{foreach $jurors as $juror}
+			{$juror->name}{if !$iterator->isLast()},{else}.{/if}
+			{/foreach}	
+			</p>
+		{else}
+			<p>Zatím nikdo nehlasoval.</p>
+		{/if}
+		
+	{/if}
+
 	{if $user->isAllowed('project', 'rate')}
 		<h2>Hodnotit projekt
 			{if $round->phase == 'firstRating'}(poprvé, před diskusí){/if}
@@ -73,12 +124,12 @@
 			<tr>
 				<th title="{$category->description}">{$category->name}</th>
 				{? shuffle($ratings[$category->id])}
-				<td>{foreach $ratings[$category->id] as $rating}<span class="ratingNum{$rating}">{$rating}</span>{if !$iterator->isLast()}, {/if}{/foreach}</td>
-				<td>{=array_sum($ratings[$category->id])/count($ratings[$category->id])}</td>
+				<td>{foreach $ratings[$category->id] as $rating} <span class="ratingNum{$rating}">{$rating}</span>{if !$iterator->isLast()},{/if}{/foreach}{for $i = 1; $i <= 5 - count($ratings[$category->id]); $i++}, &mdash;{/for}</td>
+				<td>{=number_format(array_sum($ratings[$category->id])/count($ratings[$category->id]), 3, ',', ' ')}</td>
 			</tr>
 		{? $count++; $total += array_sum($ratings[$category->id])/count($ratings[$category->id])}	
 		{/foreach}
-		<tr><th colspan="2">Celkové hodnocení (průměr)</th><th>{=$total/$count}</th></tr>
+		<tr><th colspan="2">Celkové hodnocení (průměr)</th><th>{=number_format($total/$count, 3, ',', ' ')}</th></tr>
 	</table>
 	
 	<h2>Doporučení k podpoře a komentáře komise</h2>
@@ -90,7 +141,6 @@
 		jsou anonymní), ve druhém je rozhodující.</p>
 		
 	<table>
-		{dump $eligibility}
 		{foreach $eligibility as $el}
 			<tr><td>
 				{!= $el->notEligible == 0 ? 'doporučeno' : '<strong>nedoporučeno</strong>'}				
@@ -139,12 +189,12 @@
 				
 				{/foreach}
 				<td>
-					{=array_sum($firstRatings[$category->id])/count($firstRatings[$category->id])} | 
-					{=array_sum($secondRatings[$category->id])/count($secondRatings[$category->id])}					
+					{=number_format(array_sum($firstRatings[$category->id])/count($firstRatings[$category->id]), 3, ',', ' ')} | 
+					{=number_format(array_sum($secondRatings[$category->id])/count($secondRatings[$category->id]), 3, ',', ' ')}					
 				</td>
 				<td>
-					<strong>{=(array_sum($firstRatings[$category->id])/count($firstRatings[$category->id])
-						+ array_sum($secondRatings[$category->id])/count($secondRatings[$category->id]))/2}</strong>
+					<strong>{=number_format((array_sum($firstRatings[$category->id])/count($firstRatings[$category->id])
+						+ array_sum($secondRatings[$category->id])/count($secondRatings[$category->id]))/2, 3, ',', ' ')}</strong>
 				</td>
 			</tr>
 		{? 	$count['firstRating']++;  
@@ -160,13 +210,33 @@
 			<th>&ndash;</th><th>&ndash;</th>
 		{else}	
 			<th>
-				{=$total['firstRating']/$count['firstRating']} | {=$total['secondRating']/$count['secondRating']}
+				{=number_format($total['firstRating']/$count['firstRating'], 3, ',', ' ')}&nbsp;|&nbsp;{=number_format($total['secondRating']/$count['secondRating'], 3, ',', ' ')}
 			</th>
 			<th>
-				{=($total['firstRating']/$count['firstRating'] + $total['secondRating']/$count['secondRating'])/2}
+				{=number_format(($total['firstRating']/$count['firstRating'] + $total['secondRating']/$count['secondRating'])/2, 3, ',', ' ')}
 			</th>
 		{/if}
 		</tr>
+	</table>	
+	
+	<h2>Doporučení k podpoře a komentáře komise</h2>
+	<p>Porotci hodnotí projekty podle několika kritérií a podle těchto hodnocení jsou projekty
+		řazeny při výběru těch, které budou podpořeny. Nicméně, pokud jim na projektu něco nesedí,
+		mohou projekt <strong>nedoporučit k podpoře</strong> – tím říkají, že je v návrhu projektu
+		něco zásadního špatně. Pokud projekt získá dvě a více <strong>nedoporučení</strong>, přesouvá
+		se automaticky „pod čáru“. V prvním kole má toto hodnocení orientační charakter (a hodnocení
+		jsou anonymní), ve druhém je rozhodující.</p>	
+	
+	<table>
+		<tr><th>Jméno</th><th>První kolo</th><th>Druhé kolo</th></tr>
+		{foreach $jurors as $juror}
+			<tr><td>{$juror->name}</td>
+			
+			{include #eligibility, juror => $juror, eligibility => $firstEligibility}
+			{include #eligibility, juror => $juror, eligibility => $secondEligibility}			
+				
+			</tr>
+		{/foreach}
 	</table>	
 	
 {/if}
