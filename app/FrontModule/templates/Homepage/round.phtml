@@ -76,29 +76,15 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 					OR ($round->phase == 'results' AND $project->secondRatingIneligibilityBool)}
 					{var ineligible = TRUE}
 				{/if}
-				{if $granted + $project->amount > $round->amount}
+				{if $granted + $project->negotiatedAmount > $round->amount}
 					{var noResources = TRUE}
 				{/if}
 				
-				{*if !$depleted AND ($total + $project->negotiatedAmount >= $round->amount OR $ineligible)}
-					<tr><td colspan="4" style="border-top: 1px solid black; border-bottom: 1px solid black;">
-						{if $round->phase == 'deliberation'}<strong>Projekty pod touto hranicí by podle
-						výsledků prvního kola nebyly podpořeny</strong> (kvůli nedostatku peněz
-						anebo kvůli tomu, že byly více než dvakrát komisaři označeny za nevhodné k podpoře).<br> 
-						Tento výsledek je podkladem
-						pro diskusi! Po diskusi následuje ještě závěrečné hodnocení, které má
-						stejnou váhu jako hodnocení první. Přijďte na setkání prodiskutovat hodnocení s porotci. {/if}
-						{if $round->phase == 'results'}<strong>Projekty pod touto hranicí nebudou podpořeny.</strong><br>
-						Zeptejte se porotců, jaký byl problém s Vaší žádostí. Pokud je toto váš
-						první pokus s touto žádostí, můžete to zkusit v příštím kole.{/if}
-					</td></tr>
-					{var depleted = TRUE}
-				{/if*}
-				
 				
 				{if !$noResources AND !$ineligible}{? $granted += $project->negotiatedAmount}{/if}
-			{/if}
 			{? $total += $project->negotiatedAmount}
+			{/if}
+			
 			
 		
 			<tr {if $iterator->isOdd()}class="odd"{/if}>

@@ -39,7 +39,8 @@ class Round extends Record {
 		$where = array(
 			'phase%s' => $phase, 
 			'roundID%i' => $this->id, 
-			'projects.id%n' => 'ratings.projectID'
+			'projects.id%n' => 'ratings.projectID',
+			array('rating > 0')
 		);
 		
 		if ($jurorID) $where['jurorID%i'] = $jurorID;
