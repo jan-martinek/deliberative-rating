@@ -33,3 +33,7 @@ Projekt ještě prochází turbulentním vývojem, jeho aktuální funkční ins
 – texy 2
 
 Knihovny nahrávejte do složky /libs/.
+
+## Instalace:
+_____________
+Zatím jsem neřešil vytváření dalších instancí, ale pokud byste si chtěli s aplikací pohrát, stačí vytvořit databázi ze souboru /db.sql. Při vytváření hodnotícího kola je pak nutné vytvořit ručně v databázi hodnotící kritéria (tabulka ratingCategories) a přiřadit je k danému kolu hodnocení (tabulka roundXratingCategory). Ostatní funkčnost pak již frčí přes UI.
