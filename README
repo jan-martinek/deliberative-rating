@@ -36,4 +36,6 @@ Knihovny nahrávejte do složky /libs/.
 
 ## Instalace:
 _____________
-Zatím jsem neřešil vytváření dalších instancí, ale pokud byste si chtěli s aplikací pohrát, stačí vytvořit databázi ze souboru /db.sql. Při vytváření hodnotícího kola je pak nutné vytvořit ručně v databázi hodnotící kritéria (tabulka ratingCategories) a přiřadit je k danému kolu hodnocení (tabulka roundXratingCategory). Ostatní funkčnost pak již frčí přes UI.
+Zatím jsem neřešil vytváření dalších instancí, ale pokud byste si chtěli s aplikací pohrát, stačí vytvořit databázi ze souboru /db.sql a nastavit přístup k databázi v souboru app/config.ini (v repoztáři najdete config.blank.ini, který stačí přejmenovat a doplnit). 
+
+Při vytváření hodnotícího kola je pak nutné ručně v databázi vytvořit hodnotící kritéria (tabulka ratingCategories) a přiřadit je k danému kolu hodnocení (tabulka roundXratingCategory). Ostatní funkčnost pak již frčí přes UI.
