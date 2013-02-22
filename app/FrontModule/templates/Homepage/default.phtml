@@ -4,27 +4,27 @@
 {block #content}
 <h1>{include #title}</h1>
 
-{if !count($rounds)} 
+{if !count($rounds)}
 
 <p class="blank">Zatím žádná vložená kola hodnocení projektů</p>
 
 {else}
 	<ul>
 	{foreach $rounds as $round}
-		
+
 		<li><strong><a href="{link Homepage:round, $round->id}">{$round->name}</a></strong>
 			<ul class="details">
 				<li>Kolo je ve fázi <strong>{$round->getPhaseName()}</strong>.</li>
 				{if $round->amount}<li>Rozděluje se {=number_format($round->amount, 0, ',', ' ')} Kč</li>{/if}
 				{if trim($round->deliberationTimePlace)}<li>Setkání k deliberaci se koná {= trim($round->deliberationTimePlace)}.</li>{/if}
-			
+
 
 			{if trim($round->deliberationMinutes)}<li><strong>Zápis z deliberace:</strong><br>
 				{!=nl2br(trim($round->deliberationMinutes))}</li>
 			{/if}
 			</ul>
-		
-			{if $user->isAllowed('round', 'edit')}	
+
+			{if $user->isAllowed('round', 'edit')}
 				{var form = $control['roundDetailsForm']}
 				{control roundDetailsForm begin}
 				{control roundDetailsForm errors}
@@ -34,10 +34,10 @@
 				<p>{$form['phase']->label}:<br> {$form['phase']->control}</p>
 				<p>{$form['deliberationTimePlace']->label} <em>(pište podle vzoru „v pátek 13. června ve Spolkovně na FSS“)</em>:<br> {$form['deliberationTimePlace']->control}
 					</p>
-				
+
 				<p>{$form['deliberationMinutes']->label}:<br>
 				{$form['deliberationMinutes']->control}</p>
-				
+
 				{$form['submit']->control}</p>
 				{control roundDetailsForm end}
 			{/if}
@@ -60,18 +60,18 @@
 <table class="basics">
 	<tr class="headline"><th>1. hodnocení</th><td> ⇒ </td><th class="deliberation">diskuse</th><td> ⇒ </td><th>2. hodnocení</th><tr>
 	<tr>
-		<td>Po uzávěrce komise ohodnotí všechny projekty podle několika zvolených 
-			kritérií – toto hodnocení ale není definitivní. Díky prvnímu hodnocení získají 
+		<td>Po uzávěrce komise ohodnotí všechny projekty podle několika zvolených
+			kritérií – toto hodnocení ale není definitivní. Díky prvnímu hodnocení získají
 			všichni představu, jak vypadá situace.</td>
 		<td></td>
 		<td>Předseda komise svolá setkání všech zájemců z fakulty (z řad žadatelů i jiných)
-			s komisí k diskusi (<em>deliberaci</em>) o prvních výsledcích. 
+			s komisí k diskusi (<em>deliberaci</em>) o prvních výsledcích.
 			Komise i žadatelé tak získávají zpětnou vazbu a mohou se vyjadřovat ke
 			způsobu hodnocení a používaným kritériím.</td>
 		<td></td>
 		<td>Po diskusi komise ohodnotí žádosti ještě jednou. Výsledné hodnocení
 			bere ohled na obě kola hodnocení. První kolo zdůrazňuje váhu názorů individuálních
-			hodnotících, druhé kolo je ovlivněno diskusí a časovým odstupem.</td>		
+			hodnotících, druhé kolo je ovlivněno diskusí a časovým odstupem.</td>
 	</tr>
 </table>
 
