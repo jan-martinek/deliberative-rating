@@ -115,6 +115,11 @@ class Front_HomepagePresenter extends FrontPresenter {
 
 	}
 
+	public function renderRound() {
+		$ratingCategoryManager = new RatingCategoryManager;
+		$this->template->currentCategories = $ratingCategoryManager->findByRound($this->roundID);
+		$this->template->previousCategories = $ratingCategoryManager->findByRound($ratingCategoryManager->findPreviousRound($this->roundID));
+
 		switch ($this->round->phase) {
 			case 'deliberation':
 				break;
@@ -122,6 +127,72 @@ class Front_HomepagePresenter extends FrontPresenter {
 			case 'results':
 				break;
 		}
+	}
+
+
+	public function createComponentCloneRatingCategoriesForm() {
+		$form = new AppForm;
+
+		$form->addHidden('roundID')->setValue($this->roundID);
+
+		$ratingCategoryManager = new RatingCategoryManager;
+		$form->addHidden('previousRoundID')->setValue($ratingCategoryManager->findPreviousRound($this->roundID));
+
+		$form->addSubmit('submit', 'Přenést kritéria hodnocení z minulého kola (později je možné je upravit)');
+
+		$form->onSubmit[] = callback($this, 'cloneRatingCategoriesFormSubmitted');
+		return $form;
+	}
+
+	public function cloneRatingCategoriesFormSubmitted($form) {
+		$values = $form->getValues();
+
+		$ratingCategoryManager = new RatingCategoryManager;
+		$ratingCategoryManager->copyAmongRounds($values['previousRoundID'], $values['roundID']);
+
+		$this->flashMessage('Kritéria byla přenesena.');
+		$this->redirect('this');
+	}
+
+
+	public function createComponentAddRatingCategoriesForm() {
+		$form = new AppForm;
+
+		for ($i = 0; $i < 10; $i++) {
+			$form->addText('name'.$i, 'Název', NULL, 250);
+			$form->addTextArea('description'.$i, 'Popis');
+		}
+
+		$form->addHidden('roundID')->setValue($this->roundID);
+		$form->addSubmit('submit', 'Vložit kritéria');
+
+		$form->onSubmit[] = callback($this, 'addRatingCategoriesFormSubmitted');
+		return $form;
+	}
+
+	public function addRatingCategoriesFormSubmitted($form) {
+		$values = $form->getValues();
+
+		$roundManager = new RoundManager;
+		$round = $roundManager->find($values['roundID']);
+
+		for ($i = 0; $i < 10; $i++) {
+			if ($values['name' . $i]) {
+				$round->addRatingCategory($values['name' . $i], $values['description' . $i]);
+			}
+		}
+
+
+		$this->flashMessage('Kritéria byla přidána.');
+		$this->redirect('this');
+	}
+
+	public function handleUnlinkRatingCategory($categoryID) {
+		$roundManager = new RoundManager;
+		$round = $roundManager->find($this->roundID);
+		$round->unlinkRatingCategory($categoryID);
+
+		$this->redirect('this');
 	}
 
 	public function createComponentEditProjectForm() {

@@ -32,12 +32,55 @@
 	<p>Předseda komise právě plní systém žádostmi žadatelů. Zatím neprobíhá hlasování.</p>
 {/block}
 {block #firstRating}<p>Právě probíhá první hlasování podle následujících pravidel.</p>{include #firstRatingRules}{/block}
-{block #deliberation}<p>První hlasování skončilo, <strong>{$round->deliberationTimePlace} se koná setkání 
+{block #deliberation}<p>První hlasování skončilo, <strong>{$round->deliberationTimePlace} se koná setkání
 	Komise se žadateli a celou akademickou obcí fakulty.</strong>
 	Hlasování proběhlo podle následujících pravidel:</p>{include #firstRatingRules}{/block}
 {block #secondRating}<p>Právě probíhá druhé hlasování podle následujících pravidel.</p>{include #secondRatingRules}{/block}
-{block #results}Druhé hlasování skončilo a níže vidíte konečné výsledky. 
+{block #results}Druhé hlasování skončilo a níže vidíte konečné výsledky.
 Hlasování proběhlo podle následujících pravidel:</p>{include #secondRatingRules}{/block}
+
+{block #category}
+	<li><strong>{$category->name}</strong>
+	{if $user->isAllowed('round', 'edit') AND $round->phase == 'preparation'
+		AND isset($removable)}
+		<a href="{link unlinkRatingCategory!, categoryID => $category->id}">odebrat (v tomto projektovém kole)</a>
+	{/if}
+	<br>
+	{$category->description}</li>
+{/block}
+
+{block #ratingCategories}
+
+	<h2>Kritéria hodnocení</h2>
+	<ul class="ratingCategories">
+	{foreach $currentCategories as $category}
+		{include #category, category => $category, removable => true}
+	{/foreach}
+	</ul>
+
+	{if $user->isAllowed('round', 'edit') AND $round->phase == 'preparation'}
+
+		<p>Kritéria hodnocení můžete buď převzít z minulého kola anebo vložit zcela nová
+		(přenesená kritéria můžete případně odebrat a doplnit o nová).</p>
+
+		<h3 class="collapsibleForm">1. <a href="#">Přenést kritéria z minulého kola</a></h3>
+		{var form = $control['cloneRatingCategoriesForm']}
+		{control cloneRatingCategoriesForm begin}
+		{control cloneRatingCategoriesForm errors}
+			<ul class="ratingCategories">
+			{foreach $previousCategories as $category}
+				{include #category, category => $category}
+			{/foreach}
+			</ul>
+
+			{$form['submit']->control}
+		{control cloneRatingCategoriesForm end}
+
+		<h3 class="collapsibleForm">2. <a href="#">Vložit zcela nová kritéria</a></h3>
+		{control addRatingCategoriesForm}
+
+	{/if}
+{/block}
 
 
 {block #content}
@@ -50,8 +93,11 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 {if $round->phase == 'secondRating'}{include #secondRating}{/if}
 {if $round->phase == 'results'}{include #results}{/if}
 
+{include #ratingCategories}
+
+
 <h2>Předložené projekty</h2>
-{if !count($projects)} 
+{if !count($projects)}
 
 <p class="blank">Zatím žádné projekty</p>
 
@@ -63,50 +109,50 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 			<th>2. hodnocení</th>
 			<th>Celkem</th>
 		</tr>
-		
+
 		{var total = 0}
 		{var granted = 0}
 
-		{foreach $projects as $project}	
-			{if $round->phase == 'deliberation' OR $round->phase == 'results'}			
+		{foreach $projects as $project}
+			{if $round->phase == 'deliberation' OR $round->phase == 'results'}
 				{var ineligible = FALSE}
 				{var noResources = FALSE}
-				
-				{if ($round->phase == 'deliberation' AND $project->firstRatingIneligibilityBool) 
+
+				{if ($round->phase == 'deliberation' AND $project->firstRatingIneligibilityBool)
 					OR ($round->phase == 'results' AND $project->secondRatingIneligibilityBool)}
 					{var ineligible = TRUE}
 				{/if}
 				{if $granted + $project->negotiatedAmount > $round->amount}
 					{var noResources = TRUE}
 				{/if}
-				
-				
+
+
 				{if !$noResources AND !$ineligible}{? $granted += $project->negotiatedAmount}{/if}
 			{? $total += $project->negotiatedAmount}
 			{/if}
-			
-			
-		
+
+
+
 			<tr {if $iterator->isOdd()}class="odd"{/if}>
 				<td><a href="{link Homepage:project, $project->id}">{$project->name}</a>
 					<br>{$project->applicant} &bull; {$project->negotiatedAmount}&nbsp;Kč
 					{if $project->amount != $project->negotiatedAmount}(sníženo z {$project->amount}&nbsp;Kč){/if}</td>
-					
-					
+
+
 				<td>
 					{if $round->phase == 'firstRating'}
 						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
 						{if $ratingCount}Již hodnotilo<br> {=number_format($ratingCount, 0)} z 5
 						porotců{if isset($myRating[$project->id])}<br><span class="flag granted">včetně mě</a>{/if}.
 						{else}Zatím nehodnoceno.{/if}
-					{elseif $round->phase == 'secondRating'}Hodnocení skryto.	
+					{elseif $round->phase == 'secondRating'}Hodnocení skryto.
 					{elseif $round->phase == 'deliberation' OR $round->phase == 'results'}
 						{=number_format($project->firstRating, 3, ',', ' ')}
-						
+
 						{if $project->firstRatingIneligibility > 0}
 							<span class="flag ineligible" title="Projekt byl {$project->firstRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->firstRatingIneligibility}!</span>
 						{/if}
-						
+
 						{if $round->phase == 'deliberation'}
 							{if !$noResources AND !$ineligible}
 								<span class="flagBox granted"><strong>Předběžně</strong> vyjádřena podpora
@@ -118,14 +164,14 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 							{/if}
 						{/if}
 					{/if}
-					
-					
+
+
 				</td>
-				
-				<td>	
-					{if $round->phase == 'secondRating'}							
+
+				<td>
+					{if $round->phase == 'secondRating'}
 						{var $ratingCount = isset($ratingCounts[$project->id]) ? $ratingCounts[$project->id] : 0}
-						{if $ratingCount}Již hodnotilo<br> {=number_format($ratingCount, 0)} z 5 
+						{if $ratingCount}Již hodnotilo<br> {=number_format($ratingCount, 0)} z 5
 						porotců{if isset($myRating[$project->id])}<br><span class="flag granted">včetně mě</a>{/if}.
 						{else}Zatím nehodnoceno.{/if}
 					{elseif $round->phase == 'results'}
@@ -133,7 +179,7 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 
 						{if $project->secondRatingIneligibility > 0}
 							<span class="flag ineligible" title="Projekt byl {$project->secondRatingIneligibility}x označen jako nevhodný k podpoře.">{$project->secondRatingIneligibility}!</span>
-						{/if}	
+						{/if}
 					{/if}
 				</td>
 				<td>{if $round->phase == 'results'}
@@ -149,9 +195,9 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 					{/if}</td>
 			</tr>
 
-		
+
 			{* vloženo {$round->createdDATE|date: "%e. %B %Y"} *}
-	
+
 		{/foreach}
 		<tr><th colspan="4" style="border-top: 1px solid black;">
 			Celková žádaná částka je {=number_format($total, 0, ',', ' ')} Kč.<br>
@@ -185,13 +231,13 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 	{/foreach}
 
     data.addRows([
-	 {foreach $ratings as $id => $projectRating}		
+	 {foreach $ratings as $id => $projectRating}
       ['{!= isset($projects[$id]->name) ? $projects[$id]->name : ''}', {foreach $projectRating as $rating}{!$rating->avgRating}{if !$iterator->isLast()}, {/if}{/foreach}]{if !$iterator->isLast()}, {/if}
 	 {/foreach}
     ]);
 
     var options = {
-	  isStacked: true, 
+	  isStacked: true,
 	chartArea: {l}top: '30', bottom: '20', height: '85%', width: '400'{r}
       /*title: 'Podíl kategorií na výsledném hodnocení',*/
       /*vAxis: {l}title: 'Projekt',  titleTextStyle: {l}color: 'black'{r}{r}*/
@@ -209,7 +255,7 @@ Hlasování proběhlo podle následujících pravidel:</p>{include #secondRating
 {if $user->isAllowed('round', 'edit') AND $round->phase == 'preparation'}
 
 	<hr>
-	
+
 	<h2>Vložit projekt</h2>
 	{control editProjectForm}
 {/if}
