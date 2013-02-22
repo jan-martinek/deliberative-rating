@@ -80,10 +80,12 @@
 <h1>Členové komise</h1>
 <ul>
 {foreach $jurors as $juror}
+	{if $juror->active}
 	<li><strong>{$juror->name}</strong><em> &mdash; {$juror->getRoleText()}</em><br>
 		e-mail: <a href="mailto:{$juror->email}">{$juror->email}</a> |
 		<a href="http://is.muni.cz/auth/lide/{$juror->number}">profil v ISu</a>
 	</li>
+	{/if}
 {/foreach}
 </ul>
 
