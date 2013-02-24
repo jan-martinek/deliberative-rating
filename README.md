@@ -26,14 +26,14 @@ Funkční instance je možné vidět na stipendia.servismag.cz.
      - přepis informací o projektu do angličtiny
 
 
-# Závislosti:
+# Závislosti
 
-– Nette 2.0 dev pro PHP 5.2
-– dibi
-– texy 2
+- Nette 2.0 dev pro PHP 5.2
+- dibi
+- texy 2
 
 Knihovny nahrávejte do složky /libs/.
 
-# Instalace:
+# Instalace
 
 Zatím jsem neřešil vytváření dalších instancí, ale pokud byste si chtěli s aplikací pohrát, stačí vytvořit databázi ze souboru /db.sql a nastavit přístup k databázi v souboru app/config.ini (v repoztáři najdete config.blank.ini, který stačí přejmenovat a doplnit).
