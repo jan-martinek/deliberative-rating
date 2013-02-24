@@ -1,24 +1,11 @@
 # Deliberativní systém hodnocení projektů
-<<<<<<< HEAD:README
-
-Projekt ještě prochází turbulentním vývojem, jeho aktuální funkční instanci můžete vidět na stipendia.servismag.cz.
-=======
->>>>>>> Update readme:README.md
 
 Funkční instance je možné vidět na stipendia.servismag.cz.
-
-<<<<<<< HEAD:README
-# Roadmap
-
-1.0: funkční systém pro potřeby Stipendijní komise FSS
-     - práce s kritérii hodnocení, dokončení vytváření kol hodnocení
-=======
 
 # Roadmap
 
 - 1.0: funkční systém pro potřeby Stipendijní komise FSS
      - *hotovo* práce s kritérii hodnocení, dokončení vytváření kol hodnocení
->>>>>>> Update readme:README.md
      - integrovaný manuál / first steps
      - odladění používaných termínů
      - *hotovo* integrace pravidel
@@ -47,14 +34,6 @@ Funkční instance je možné vidět na stipendia.servismag.cz.
 
 Knihovny nahrávejte do složky /libs/.
 
-<<<<<<< HEAD:README
-## Instalace:
-_____________
-Zatím jsem neřešil vytváření dalších instancí, ale pokud byste si chtěli s aplikací pohrát, stačí vytvořit databázi ze souboru /db.sql a nastavit přístup k databázi v souboru app/config.ini (v repoztáři najdete config.blank.ini, který stačí přejmenovat a doplnit).
-=======
 # Instalace:
 
 Zatím jsem neřešil vytváření dalších instancí, ale pokud byste si chtěli s aplikací pohrát, stačí vytvořit databázi ze souboru /db.sql a nastavit přístup k databázi v souboru app/config.ini (v repoztáři najdete config.blank.ini, který stačí přejmenovat a doplnit).
-
-Při vytváření hodnotícího kola je pak nutné ručně v databázi vytvořit hodnotící kritéria (tabulka ratingCategories) a přiřadit je k danému kolu hodnocení (tabulka roundXratingCategory). Ostatní funkčnost pak již frčí přes UI.
->>>>>>> Update readme:README.md
